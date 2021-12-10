@@ -2,13 +2,20 @@ import requests
 import json
 from datetime import datetime, timedelta
 from api_key import API_KEY
+import boto3
+
+# https://www.metoffice.gov.uk/services/data/datapoint
 
 BASE_URL = "http://datapoint.metoffice.gov.uk/public/data/"
 BASE_PARAMS = {
     "key": API_KEY,
     "res": "hourly"
 }
-OUTPUT_FILE = "weatherData/last_24h_observations_uk.json"
+OUTPUT_FILE = "weatherData/observations.json"
+S3_BUCKET = "dantelore.data.incoming"
+S3_FILENAME = "weather/{year}/{month}/{day}/observations.json".format(year=datetime.now().year,
+                                                                      month=datetime.now().month,
+                                                                      day=datetime.now().day)
 
 
 def get_sites():
@@ -98,6 +105,12 @@ def load_observations_data():
                 f.writelines(line + '\n')
 
             print("Wrote {0} lines to file '{1}'".format(i, OUTPUT_FILE))
+
+        s3 = boto3.resource('s3')
+        s3.Bucket(S3_BUCKET).upload_file(
+            OUTPUT_FILE,
+            S3_FILENAME
+        )
 
 
 if __name__ == '__main__':
