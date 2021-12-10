@@ -107,6 +107,8 @@ def load_observations_data_to_local(filename):
 
         print("Wrote {0} lines to file '{1}'".format(i, filename))
 
+    return True
+
 
 def load_observations_data_to_s3():
     if load_observations_data_to_local(TEMP_FILE):
