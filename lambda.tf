@@ -78,7 +78,10 @@ resource "aws_iam_policy" "lambda_policy" {
       "Action": [
         "s3:GetObject*",
         "s3:ListBucket*",
-        "s3:PutObject*"
+        "s3:PutObject*",
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
       ],
       "Resource": [
           "*"
