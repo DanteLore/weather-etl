@@ -26,8 +26,8 @@ resource "aws_lambda_function" "lambda_function" {
 
 resource "aws_cloudwatch_event_rule" "time_to_load_the_data" {
   name                = "time_to_load_the_data"
-  description         = "Grab the data just before the new day starts"
-  schedule_expression = "cron(50 23 * * ? *)"
+  description         = "Grab the data just after midnight"
+  schedule_expression = "cron(10 0 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "load_data_at_half_past_midnight" {

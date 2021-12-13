@@ -76,21 +76,25 @@ def transform_observations_data(data):
             day = datetime.strptime(p['value'], "%Y-%m-%dZ")
 
             for r in p['Rep']:
-                time = day + timedelta(minutes=int(r['$']))
-                row = {
-                    "timestamp": time.isoformat(),
-                    "site_id": site_id,
-                    "site_name": site_name,
-                    "site_country": site_country,
-                    "site_continent": site_continent,
-                    "site_elevation": site_elevation,
-                    "lat": lat,
-                    "lon": lon
-                }
+                try:
+                    time = day + timedelta(minutes=int(r['$']))
+                    row = {
+                        "timestamp": time.isoformat(),
+                        "site_id": site_id,
+                        "site_name": site_name,
+                        "site_country": site_country,
+                        "site_continent": site_continent,
+                        "site_elevation": site_elevation,
+                        "lat": lat,
+                        "lon": lon
+                    }
 
-                observations = dict((names_lookup[key], r[key]) for key in r if key != '$')
-                row.update(observations)
-                yield json.dumps(row)
+                    observations = dict((names_lookup[key], r[key]) for key in r if key != '$')
+                    row.update(observations)
+                    yield json.dumps(row)
+                except Exception as e:
+                    print("Parsing data row in 'Rep' failed")
+                    print(e)
 
 
 def load_observations_data_to_local(filename):
@@ -112,7 +116,6 @@ def load_observations_data_to_local(filename):
 
 def load_observations_data_to_s3():
     if load_observations_data_to_local(TEMP_FILE):
-
         s3 = boto3.resource('s3')
         s3.Bucket(S3_BUCKET).upload_file(
             TEMP_FILE,
