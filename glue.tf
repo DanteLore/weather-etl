@@ -24,8 +24,8 @@ resource "aws_glue_catalog_table" "incoming_weather_glue_table" {
     }
 
     columns {
-      name = "timestamp"
-      type = "string"
+      name = "observation_ts"
+      type = "timestamp"
     }
 
     columns {

@@ -74,7 +74,7 @@ def do_transform(data):
             for r in p['Rep']:
                 time = day + timedelta(minutes=int(r['$']))
                 row = {
-                    "timestamp": time.isoformat(),
+                    "observation_ts": time.strftime("%Y-%m-%d %H:%M:%S"),
                     "site_id": site_id,
                     "site_name": site_name,
                     "site_country": site_country,

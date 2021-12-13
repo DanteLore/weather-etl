@@ -21,3 +21,4 @@ before midnight each night.  Output is pushed to S3 in a more queryable JSON for
 * How to deal with failures - what happens if the job fails - only 24h of data is available on the API, so failure would mean data loss.  How to deal with this IRL?
 * Check validity of data, handle bugs/bad data etc elegantly
 * Schema-on-write validation
+* How would we deal with changing schemas?
