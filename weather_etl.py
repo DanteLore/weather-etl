@@ -1,8 +1,7 @@
-import requests
 import json
 from datetime import datetime, timedelta
+import requests
 from api_key import API_KEY
-import boto3
 
 BASE_URL = "http://datapoint.metoffice.gov.uk/public/data/"
 BASE_PARAMS = {

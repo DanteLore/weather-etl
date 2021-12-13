@@ -1,6 +1,6 @@
 mkdir build
 
-cp lambda.py build
+cp lambda_function.py build
 cp api_key.py build
 cp weather_etl.py build
 

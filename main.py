@@ -8,3 +8,4 @@ OUTPUT_FILE = 'weatherData/last_24h_observations_uk.json'
 if __name__ == '__main__':
     extract_observations_data(INPUT_FILE)
     transform_observations_data(INPUT_FILE, OUTPUT_FILE)
+

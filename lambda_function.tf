@@ -7,7 +7,7 @@ variable "function_name" {
 }
 
 variable "handler" {
-  default = "lambda.handler"
+  default = "lambda_function.handler"
 }
 
 variable "runtime" {
@@ -81,7 +81,16 @@ resource "aws_iam_policy" "lambda_policy" {
         "s3:PutObject*",
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
-        "logs:PutLogEvents"
+        "logs:PutLogEvents",
+        "athena:StartQueryExecution",
+        "athena:GetQueryExecution",
+        "glue:GetDatabase",
+        "glue:GetTable",
+        "glue:CreatePartition",
+        "glue:BatchCreatePartition",
+        "glue:UpdatePartition",
+        "glue:GetPartition",
+        "glue:GetPartitions"
       ],
       "Resource": [
           "*"
