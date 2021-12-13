@@ -9,7 +9,8 @@ before midnight each night.  Output is pushed to S3 in a more queryable JSON for
 
 * **weather_etl** the code that does the transform/cleaning of the data
 * **main.py** run it locally
-* **lambda_function.py** the lambda function implementation and AWS specific stuff
+* **lambda_function.py** the lambda function implementation 
+* **aws_helpers.py** Some AWS helper functions for Athena, Glue, S3 etc
 * **lambda_function.tf** terraform to create the lambda, roles, trigger etc
 * **glue.tf** setup for the glue table, including schema, partitioning etc
 
