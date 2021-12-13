@@ -1,6 +1,6 @@
 # Weather ETL
 
-The simplest, most basic implementation of an ETL in AWS.  Pulls data fro the Met Office
+The simplest, most basic implementation of an ETL in AWS.  Pulls data from the Met Office
 [DataPoint API](https://www.metoffice.gov.uk/services/data/datapoint), 
 which provides 24 hourly weather observations in real-ish time.
 
