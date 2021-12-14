@@ -22,10 +22,7 @@ it is added.
 
 ## Thoughts
 
-* Would it be better to pull the raw data direct from source and store it to S3 "acquired" then process to the cleaner form?  Safer from bugs in the transform/decode code then
-* Unit tests are nice, should have some ;)
 * How to deal with failures - what happens if the job fails - only 24h of data is available on the API, so failure would mean data loss.  How to deal with this IRL?
-* Check validity of data, handle bugs/bad data etc elegantly
 * Schema-on-write validation
 * How would we deal with changing schemas?
 
