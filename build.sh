@@ -8,10 +8,12 @@ cp aws_helpers.py build
 (
   cd build || exit
   pip install --target . -r ../requirements.txt
-  zip -r -u ../lambda.zip ./*
+  zip -r -u ../terraform/lambda.zip ./*
 )
 rm -rf build
 
-terraform apply -auto-approve
-
-rm -rf lambda.zip
+(
+  cd terraform || exit
+  terraform apply -auto-approve
+  rm -rf lambda.zip
+)
