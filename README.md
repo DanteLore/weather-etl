@@ -20,7 +20,7 @@ it is added.
 * **terraform/lambda_function.tf** terraform to create the lambda, roles, trigger etc
 * **terraform/glue.tf** setup for the glue table, including schema, partitioning etc
 
-# Thoughts
+## Thoughts
 
 * Would it be better to pull the raw data direct from source and store it to S3 "acquired" then process to the cleaner form?  Safer from bugs in the transform/decode code then
 * Unit tests are nice, should have some ;)
@@ -28,3 +28,10 @@ it is added.
 * Check validity of data, handle bugs/bad data etc elegantly
 * Schema-on-write validation
 * How would we deal with changing schemas?
+
+### Met Office API Key
+
+It's a secret!  So, create a file called `api_key.py` containing:
+```
+API_KEY = "12345678-ABCD-1234-ABCD-123456789ABC"
+```
