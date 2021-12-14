@@ -77,21 +77,17 @@ def do_transform(data):
                 obs = [obs]
 
             for r in obs:
-                try:
-                    time = day + timedelta(minutes=int(r['$']))
-                    row = {
-                        "observation_ts": time.strftime("%Y-%m-%d %H:%M:%S"),
-                        "site_id": site_id,
-                        "site_name": site_name,
-                        "site_country": site_country,
-                        "site_continent": site_continent,
-                        "site_elevation": site_elevation,
-                        "lat": lat,
-                        "lon": lon
-                    }
-                except:
-                    print("Borkenz")
-                    return
+                time = day + timedelta(minutes=int(r['$']))
+                row = {
+                    "observation_ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "site_id": site_id,
+                    "site_name": site_name,
+                    "site_country": site_country,
+                    "site_continent": site_continent,
+                    "site_elevation": site_elevation,
+                    "lat": lat,
+                    "lon": lon
+                }
 
                 observations = dict((names_lookup[key], r[key]) for key in r if key != '$')
                 row.update(observations)
