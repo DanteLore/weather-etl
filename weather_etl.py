@@ -52,7 +52,7 @@ def do_transform(data):
     names_lookup = dict([(p['name'], p['$'].lower().replace(' ', '_')) for p in params])
     obs = data['SiteRep']['DV']['Location']
 
-    print("Transforming weatherData for {0} sites".format(len(obs)))
+    print("Transforming Weather Data for {0} sites".format(len(obs)))
 
     for o in obs:
         site_id = o['i']
@@ -71,18 +71,27 @@ def do_transform(data):
         for p in periods:
             day = datetime.strptime(p['value'], "%Y-%m-%dZ")
 
-            for r in p['Rep']:
-                time = day + timedelta(minutes=int(r['$']))
-                row = {
-                    "observation_ts": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "site_id": site_id,
-                    "site_name": site_name,
-                    "site_country": site_country,
-                    "site_continent": site_continent,
-                    "site_elevation": site_elevation,
-                    "lat": lat,
-                    "lon": lon
-                }
+            # 'Rep' could also be a list or a single item
+            obs = p['Rep']
+            if not isinstance(obs, list):
+                obs = [obs]
+
+            for r in obs:
+                try:
+                    time = day + timedelta(minutes=int(r['$']))
+                    row = {
+                        "observation_ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "site_id": site_id,
+                        "site_name": site_name,
+                        "site_country": site_country,
+                        "site_continent": site_continent,
+                        "site_elevation": site_elevation,
+                        "lat": lat,
+                        "lon": lon
+                    }
+                except:
+                    print("Borkenz")
+                    return
 
                 observations = dict((names_lookup[key], r[key]) for key in r if key != '$')
                 row.update(observations)
