@@ -28,11 +28,7 @@ and business logic we don't want or need.
 * **main.py** run it locally
 * **lambda_function.py** the lambda function implementation 
 * **aws_helpers.py** Some AWS helper functions for Athena, Glue, S3 etc
-
-
 * **tests/** Unit tests and test data
-
-
 * **terraform/lambda_function.tf** terraform to create the lambda, roles, trigger etc
 * **terraform/glue.tf** setup for the glue table, including schema, partitioning etc
 
@@ -44,6 +40,7 @@ and business logic we don't want or need.
 * How would we deal with changing schemas?
 * In real life, it might make sense to look at Airflow rather than a lambda function to manage this job.  However, I can't afford to operate an Airflow setup on my personal AWS account!
 * You might well want to operate a real time data platform ([like this](https://dantelore.com/posts/kafkas-beer-festival/)) as well as just a Data Lake - in which case, this ETL should post to a REST API, which acts as a facade in front of your RTP and Data Lake.
+* The glue schema here is managed directly by Terraform, meaning it is explicitly set and linked (via git) to a specific version of the ETL. Glue Crawlers promise to do this automatically, but beware! Glue Crawlers aren't great at detecting data types - and having an explicit schema with an obvious way to manage change is very valuable.
 
 ### Met Office API Key
 
