@@ -1,5 +1,7 @@
 import json
 from datetime import datetime, timedelta
+
+import jsonschema as jsonschema
 import requests
 from api_key import API_KEY
 
@@ -84,9 +86,9 @@ def do_transform(data):
                     "site_name": site_name,
                     "site_country": site_country,
                     "site_continent": site_continent,
-                    "site_elevation": site_elevation,
-                    "lat": lat,
-                    "lon": lon
+                    "site_elevation": float(site_elevation),
+                    "lat": float(lat),
+                    "lon": float(lon)
                 }
 
                 observations = dict((names_lookup[key], r[key]) for key in r if key != '$')
@@ -110,4 +112,15 @@ def transform_observations_data(input_filename, output_filename):
         print("Wrote {0} lines to file '{1}'".format(i, output_filename))
 
     return True
+
+
+def validate_json(data_filename, schema_filename):
+    with open(schema_filename, 'r') as schema_file:
+        schema = json.load(schema_file)
+
+    with open(data_filename, 'r') as data_file:
+        for line in data_file:
+            obj = json.loads(line)
+
+            jsonschema.validate(obj, schema)
 

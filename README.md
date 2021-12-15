@@ -48,3 +48,28 @@ It's a secret!  So, create a file called `api_key.py` containing:
 ```
 API_KEY = "12345678-ABCD-1234-ABCD-123456789ABC"
 ```
+
+### Schema Validation
+
+It makes a lot of sense to validate data written to the _Incoming_ bucket against a JSON schema.  This
+is basically an implementation of [schema on write](https://luminousmen.com/post/schema-on-read-vs-schema-on-write), 
+where you validate data before you write it to the lake, rather than worrying about it every time you query.
+
+I wrote a function to do this, but it's pretty slow, and since I am paying for this with my own money, not 
+worth it for this demo - so I left it out of the Lambda function itself.  In a real system, it may well make sense
+to do this - either within the ETL, the ETL framework or a separate component in the architecture/flow.
+
+```python
+def validate_json(data_filename, schema_filename):
+    with open(schema_filename, 'r') as schema_file:
+        schema = json.load(schema_file)
+
+    with open(data_filename, 'r') as data_file:
+        for line in data_file:
+            obj = json.loads(line)
+
+            jsonschema.validate(obj, schema)
+```
+
+Other formats for data storage like Avro and Parquet will enforce a schema themselves, giving you schema-on-write for free.
+Hard coding the glue schema, as we have done here (see `glue.tf`) also helps.

@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "observation_ts": {"type": "string"},
+    "site_id": {"type": "string"},
+    "site_name": {"type": "string"},
+    "site_country": {"type": "string"},
+    "site_continent": {"type": "string"},
+    "site_elevation": {"type": "number"},
+    "lat": {"type": "number"},
+    "lon": {"type": "number"},
+    "wind_direction": {"type": "string"},
+    "wind_gust": {"type": "string"},
+    "screen_relative_humidity": {"type": "string"},
+    "pressure": {"type": "string"},
+    "wind_speed": {"type": "string"},
+    "temperature": {"type": "string"},
+    "visibility": {"type": "string"},
+    "weather_type": {"type": "string"},
+    "pressure_tendency": {"type": "string"},
+    "dew_point": {"type": "string"}
+  },
+  "required": [
+    "observation_ts",
+    "site_id",
+    "site_name",
+    "site_country",
+    "site_continent",
+    "site_elevation",
+    "lat",
+    "lon"
+  ]
+}
