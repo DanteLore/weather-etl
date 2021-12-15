@@ -27,7 +27,7 @@ resource "aws_lambda_function" "lambda_function" {
 resource "aws_cloudwatch_event_rule" "time_to_load_the_data" {
   name                = "time_to_load_the_data"
   description         = "Grab the data just after midnight"
-  schedule_expression = "cron(10 0 * * ? *)"
+  schedule_expression = "cron(50 23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "load_data_at_half_past_midnight" {
@@ -76,9 +76,6 @@ resource "aws_iam_policy" "lambda_policy" {
   "Statement": [
     {
       "Action": [
-        "s3:GetObject*",
-        "s3:ListBucket*",
-        "s3:PutObject*",
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
         "logs:PutLogEvents",
@@ -94,6 +91,27 @@ resource "aws_iam_policy" "lambda_policy" {
       ],
       "Resource": [
           "*"
+      ]
+      ,
+      "Effect": "Allow",
+      "Sid": ""
+    },
+    {
+      "Action": [
+        "s3:GetObject*",
+        "s3:ListBucket*",
+        "s3:PutObject*",
+        "s3:GetBucketLocation",
+        "s3:ListMultipartUploadParts",
+        "s3:AbortMultipartUpload",
+        "s3:CreateBucket",
+        "s3:PutObject"
+      ],
+      "Resource": [
+          "arn:aws:s3:::dantelore.data.incoming",
+          "arn:aws:s3:::dantelore.data.incoming/*",
+          "arn:aws:s3:::dantelore.queryresults",
+          "arn:aws:s3:::dantelore.queryresults/*"
       ]
       ,
       "Effect": "Allow",
