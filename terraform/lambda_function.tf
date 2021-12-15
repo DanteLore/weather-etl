@@ -113,6 +113,8 @@ resource "aws_iam_policy" "lambda_policy" {
       "Resource": [
           "arn:aws:s3:::dantelore.data.incoming",
           "arn:aws:s3:::dantelore.data.incoming/*",
+          "arn:aws:s3:::dantelore.data.raw",
+          "arn:aws:s3:::dantelore.data.raw/*",
           "arn:aws:s3:::dantelore.queryresults",
           "arn:aws:s3:::dantelore.queryresults/*"
       ]
