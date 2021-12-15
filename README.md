@@ -42,7 +42,7 @@ and business logic we don't want or need.
 * How to deal with failures - what happens if the job fails - only 24h of data is available on the API, so failure would mean data loss.  How to deal with this IRL?
 * Schema-on-write validation
 * How would we deal with changing schemas?
-* In real life, it might make sense to look at Airflow rather than a lambda function to manage this job.  However, I can't afford to operate a Airflow setup on my personal AWS account!
+* In real life, it might make sense to look at Airflow rather than a lambda function to manage this job.  However, I can't afford to operate an Airflow setup on my personal AWS account!
 * You might well want to operate a real time data platform ([like this](https://dantelore.com/posts/kafkas-beer-festival/)) as well as just a Data Lake - in which case, this ETL should post to a REST API, which acts as a facade in front of your RTP and Data Lake.
 
 ### Met Office API Key
