@@ -20,6 +20,8 @@ it is added.
 * **terraform/lambda_function.tf** terraform to create the lambda, roles, trigger etc
 * **terraform/glue.tf** setup for the glue table, including schema, partitioning etc
 
+![Architecture Diagram](docs/architecture.png)
+
 ## Thoughts
 
 * How to deal with failures - what happens if the job fails - only 24h of data is available on the API, so failure would mean data loss.  How to deal with this IRL?
