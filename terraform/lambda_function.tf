@@ -14,6 +14,11 @@ variable "runtime" {
   default = "python3.6"
 }
 
+resource "aws_cloudwatch_log_group" "loggroup" {
+  name              = "/aws/lambda/${var.function_name}"
+  retention_in_days = 3
+}
+
 resource "aws_lambda_function" "lambda_function" {
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = var.handler
@@ -26,7 +31,7 @@ resource "aws_lambda_function" "lambda_function" {
 
 resource "aws_cloudwatch_event_rule" "time_to_load_the_data" {
   name                = "time_to_load_the_data"
-  description         = "Grab the data just after midnight"
+  description         = "Grab the data just after mi§dnight"
   schedule_expression = "cron(50 23 * * ? *)"
 }
 
@@ -68,7 +73,6 @@ EOF
 resource "aws_iam_policy" "lambda_policy" {
   name        = "weather_data_policy"
   path        = "/"
-  description = "TBD"
 
   policy = <<EOF
 {
@@ -76,7 +80,6 @@ resource "aws_iam_policy" "lambda_policy" {
   "Statement": [
     {
       "Action": [
-        "logs:CreateLogGroup",
         "logs:CreateLogStream",
         "logs:PutLogEvents",
         "athena:StartQueryExecution",
