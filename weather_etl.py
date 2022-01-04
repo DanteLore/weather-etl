@@ -73,9 +73,12 @@ def do_transform(data):
         for p in periods:
             day = datetime.strptime(p['value'], "%Y-%m-%dZ")
 
-            # 'Rep' could also be a list or a single item
-            obs = p['Rep']
-            if not isinstance(obs, list):
+            # 'Rep' could be a list or a single item - or might be missing
+            obs = p.get('Rep')
+            if not obs:
+                print(f'No observartions found for {site_id}: {site_name}')
+                obs = []
+            elif not isinstance(obs, list):
                 obs = [obs]
 
             for r in obs:
