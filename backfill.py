@@ -1,6 +1,5 @@
 from aws_helpers import add_glue_partition_for, download_file_from_s3, load_file_to_s3
-from datetime import datetime
-from weather_etl import extract_observations_data, transform_observations_data, validate_json
+from weather_etl import transform_observations_data
 
 YEAR = 2022
 MONTH = 1
