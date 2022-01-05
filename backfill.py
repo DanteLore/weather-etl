@@ -4,7 +4,7 @@ from weather_etl import extract_observations_data, transform_observations_data, 
 
 YEAR = 2022
 MONTH = 1
-DAY = 2
+DAY = 4
 
 S3_INCOMING_BUCKET = "dantelore.data.incoming"
 S3_RAW_BUCKET = "dantelore.data.raw"

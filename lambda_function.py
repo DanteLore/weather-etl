@@ -1,5 +1,6 @@
 from aws_helpers import load_file_to_s3, add_glue_partition_for
 from datetime import datetime
+import jsonschema
 from weather_etl import extract_observations_data, transform_observations_data
 
 INPUT_FILE = "/tmp/weather_data.json"
