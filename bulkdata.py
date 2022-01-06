@@ -1,27 +1,29 @@
 import requests
 import os
+import csv
+import json
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from aws_helpers import load_file_to_s3
 from ceda_auth_helpers import setup_credentials, CREDENTIALS_FILE_PATH, CERTS_DIR
 
-DEST_DIR = "weatherData/midas"
+LOCAL_FILE_STORE = "weatherData/midas"
 ROOT_URL = "https://dap.ceda.ac.uk/badc/ukmo-midas-open/data/uk-hourly-weather-obs/dataset-version-202107/"
 S3_RAW_BUCKET = "dantelore.data.raw"
+S3_INCOMING_BUCKET = "dantelore.data.incoming"
 S3_BASE_KEY = "midas"
+VERSION_ID = "qc-version-1"
 
 history = []
 
 
 def save_file(response, url):
     dirs = url[len(ROOT_URL):].split('/')[:-1]
-    dest_dir = os.path.join(DEST_DIR, *dirs)
+    dest_dir = os.path.join(LOCAL_FILE_STORE, *dirs)
 
     filename = url.rsplit('/', 1)[-1]
     local_file = os.path.join(dest_dir, filename)
-
-    raw_s3_key = os.path.join(S3_BASE_KEY, *dirs, filename)
 
     if not os.path.exists(dest_dir):
         print('Created directory: ' + dest_dir)
@@ -31,7 +33,14 @@ def save_file(response, url):
     with open(local_file, 'wb') as file_object:
         file_object.write(response.content)
 
-    load_file_to_s3(local_file, S3_RAW_BUCKET, raw_s3_key)
+    return local_file
+
+
+def save_file_to_s3(bucket, local_file):
+    filename = local_file.rsplit('/', 1)[-1]
+    dirs = local_file[len(LOCAL_FILE_STORE):].split('/')[:-1]
+    raw_s3_key = os.path.join(S3_BASE_KEY, *dirs, filename)
+    load_file_to_s3(local_file, bucket, raw_s3_key)
 
 
 def fetch_data(url):
@@ -39,14 +48,14 @@ def fetch_data(url):
     if url in history or (url != ROOT_URL and ROOT_URL.startswith(url)):
         return
 
-    print("Processing " + url)
-
     history.append(url)
     response = requests.get(url, cert=CREDENTIALS_FILE_PATH, verify=CERTS_DIR)
 
     content_type = response.headers['content-type']
     if content_type == 'application/octet-stream':
-        save_file(response, url)
+        if VERSION_ID in url:
+            # Note that we only want one of the QA versions here, to avoid duplicates.
+            process_data_file(response, url)
     elif content_type == 'text/html':
         soup = BeautifulSoup(response.content)
 
@@ -58,9 +67,55 @@ def fetch_data(url):
         print('Unknown content type')
 
 
+def extract_data(csv_filename):
+    print('Processing: ' + csv_filename)
+
+    csv_lines = []
+    data = {}
+    in_csv_section = False
+    json_filename = csv_filename.replace('.csv', '.json')
+
+    with open(csv_filename, "r") as f:
+        for line in f:
+            if line.lower().strip() == 'data':
+                in_csv_section = True
+            elif line.lower().strip() == "end data":
+                in_csv_section = False
+            elif in_csv_section:
+                csv_lines.append(line)
+            elif line.startswith('observation_station,'):
+                data["observation_station"] = line.split(',')[-1].strip()
+            elif line.startswith('location,'):
+                data["lon"] = float(line.split(',')[-1])
+                data["lat"] = float(line.split(',')[-2])
+            elif line.startswith('height,'):
+                data["height"] = line.split(',')[-2].strip()
+            elif line.startswith('historic_county_name,'):
+                data["county"] = line.split(',')[-1].strip()
+
+    if len(csv_lines) > 0:
+        with open(json_filename, "w") as f:
+            for row in csv.DictReader(csv_lines):
+                json_line = json.dumps({**data, **row})
+                f.write(json_line)
+        return json_filename
+    else:
+        return None
+
+
+def process_data_file(response, url):
+    raw_data_file = save_file(response, url)
+    if raw_data_file:
+        save_file_to_s3(S3_RAW_BUCKET, raw_data_file)
+        json_file = extract_data(raw_data_file)
+        if json_file:
+            save_file_to_s3(S3_INCOMING_BUCKET, json_file)
+
+
 if __name__ == '__main__':
     try:
         setup_credentials()
+        print("Credentials setup complete")
     except KeyError:
         print("CEDA_USERNAME and CEDA_PASSWORD environment variables required")
         exit(1)
