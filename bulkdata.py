@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import requests
 import os
 import csv
@@ -18,6 +20,7 @@ S3_BASE_KEY = "midas"
 VERSION_ID = "qc-version-1"
 
 history = []
+executor = ThreadPoolExecutor(max_workers=8)
 
 
 def save_file(response, url):
@@ -57,8 +60,7 @@ def fetch_data(url):
 
     content_type = response.headers['content-type']
     if content_type == 'application/octet-stream':
-        if VERSION_ID in url:
-            # Note that we only want one of the QA versions here, to avoid duplicates.
+        if VERSION_ID in url: # Note that we only want one of the QA versions here, to avoid duplicates.
             process_data_file(response, url)
     elif content_type == 'text/html':
         soup = BeautifulSoup(response.content, features="html.parser")
@@ -128,7 +130,7 @@ def ensure_directory_exists(d):
         os.makedirs(d)
 
 
-def process_data_file(response, url):
+def do_process_data_file(response, url):
     raw_data_file = save_file(response, url)
     if raw_data_file:
         save_gzipped_file_to_s3(S3_RAW_BUCKET, raw_data_file)
@@ -139,6 +141,10 @@ def process_data_file(response, url):
             # Zipped copies will remain
             os.remove(json_file)
         os.remove(raw_data_file)
+
+
+def process_data_file(response, url):
+    executor.submit(do_process_data_file, response, url)
 
 
 if __name__ == '__main__':
