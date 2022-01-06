@@ -2,6 +2,7 @@ import requests
 import os
 import csv
 import json
+import gzip
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -26,9 +27,7 @@ def save_file(response, url):
     filename = url.rsplit('/', 1)[-1]
     local_file = os.path.join(dest_dir, filename)
 
-    if not os.path.exists(dest_dir):
-        print('Created directory: ' + dest_dir)
-        os.makedirs(dest_dir)
+    ensure_directory_exists(dest_dir)
 
     print(f"Saving file: {local_file}")
     with open(local_file, 'wb') as file_object:
@@ -37,11 +36,15 @@ def save_file(response, url):
     return local_file
 
 
-def save_file_to_s3(bucket, local_file):
-    filename = local_file.rsplit('/', 1)[-1]
+def save_gzipped_file_to_s3(bucket, local_file):
     dirs = local_file[len(LOCAL_FILE_STORE):].split('/')[:-1]
-    raw_s3_key = os.path.join(S3_BASE_KEY, *dirs, filename)
-    load_file_to_s3(local_file, bucket, raw_s3_key)
+
+    zipped_file = local_file + ".gz"
+    with open(local_file, 'rb') as f_in, gzip.open(zipped_file, 'wb') as f_out:
+        f_out.writelines(f_in)
+
+    raw_s3_key = os.path.join(S3_BASE_KEY, *dirs, zipped_file.rsplit('/', 1)[-1])
+    load_file_to_s3(zipped_file, bucket, raw_s3_key)
 
 
 def fetch_data(url):
@@ -106,9 +109,7 @@ def extract_data(csv_filename):
 
     json_dir = os.path.join(LOCAL_FILE_STORE, f"year={year}")
 
-    if not os.path.exists(json_dir):
-        print('Created directory: ' + json_dir)
-        os.makedirs(json_dir)
+    ensure_directory_exists(json_dir)
 
     json_filename = os.path.join(json_dir, csv_filename.split('/')[-1].replace('.csv', '.json'))
 
@@ -122,13 +123,22 @@ def extract_data(csv_filename):
     return json_filename
 
 
+def ensure_directory_exists(d):
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+
 def process_data_file(response, url):
     raw_data_file = save_file(response, url)
     if raw_data_file:
-        save_file_to_s3(S3_RAW_BUCKET, raw_data_file)
+        save_gzipped_file_to_s3(S3_RAW_BUCKET, raw_data_file)
         json_file = extract_data(raw_data_file)
         if json_file:
-            save_file_to_s3(S3_INCOMING_BUCKET, json_file)
+            save_gzipped_file_to_s3(S3_INCOMING_BUCKET, json_file)
+
+            # Zipped copies will remain
+            os.remove(json_file)
+        os.remove(raw_data_file)
 
 
 if __name__ == '__main__':
