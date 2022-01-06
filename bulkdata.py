@@ -4,6 +4,7 @@ import csv
 import json
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 from aws_helpers import load_file_to_s3
 from ceda_auth_helpers import setup_credentials, CREDENTIALS_FILE_PATH, CERTS_DIR
@@ -57,7 +58,7 @@ def fetch_data(url):
             # Note that we only want one of the QA versions here, to avoid duplicates.
             process_data_file(response, url)
     elif content_type == 'text/html':
-        soup = BeautifulSoup(response.content)
+        soup = BeautifulSoup(response.content, features="html.parser")
 
         for link in soup.find_all('a', href=True):
             link = link['href']
@@ -73,7 +74,7 @@ def extract_data(csv_filename):
     csv_lines = []
     data = {}
     in_csv_section = False
-    json_filename = csv_filename.replace('.csv', '.json')
+    year = None
 
     with open(csv_filename, "r") as f:
         for line in f:
@@ -81,6 +82,8 @@ def extract_data(csv_filename):
                 in_csv_section = True
             elif line.lower().strip() == "end data":
                 in_csv_section = False
+            elif line.startswith('date_valid'):
+                year = datetime.strptime(line.split(',')[-2].strip(), '%Y-%m-%d %H:%M:%S').year
             elif in_csv_section:
                 csv_lines.append(line)
             elif line.startswith('observation_station,'):
@@ -93,14 +96,30 @@ def extract_data(csv_filename):
             elif line.startswith('historic_county_name,'):
                 data["county"] = line.split(',')[-1].strip()
 
-    if len(csv_lines) > 0:
-        with open(json_filename, "w") as f:
-            for row in csv.DictReader(csv_lines):
-                json_line = json.dumps({**data, **row})
-                f.write(json_line)
-        return json_filename
-    else:
-        return None
+    if len(csv_lines) == 0:
+        print("No data in file")
+        return
+
+    if not year:
+        print("Cannot determine year")
+        return
+
+    json_dir = os.path.join(LOCAL_FILE_STORE, f"year={year}")
+
+    if not os.path.exists(json_dir):
+        print('Created directory: ' + json_dir)
+        os.makedirs(json_dir)
+
+    json_filename = os.path.join(json_dir, csv_filename.split('/')[-1].replace('.csv', '.json'))
+
+    print("Writing JSON to " + json_filename)
+    with open(json_filename, "w") as f:
+        for row in csv.DictReader(csv_lines):
+            # Combine file and row data, remove anything which is 'NA' to save space
+            output_row = {key: val for key, val in {**data, **row}.items() if val != 'NA'}
+            json_line = json.dumps(output_row)
+            f.write(json_line)
+    return json_filename
 
 
 def process_data_file(response, url):
