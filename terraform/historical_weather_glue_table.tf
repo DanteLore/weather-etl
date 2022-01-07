@@ -28,6 +28,18 @@ resource "aws_glue_catalog_table" "historical_weather_glue_table" {
       type = "timestamp"
     }
     columns {
+      name = "observation_station"
+      type = "string"
+    }
+    columns {
+      name = "lat"
+      type = "float"
+    }
+    columns {
+      name = "lon"
+      type = "float"
+    }
+    columns {
       name = "id"
       type = "string"
     }

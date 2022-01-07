@@ -121,7 +121,7 @@ def extract_data(csv_filename):
             # Combine file and row data, remove anything which is 'NA' to save space
             output_row = {key: val for key, val in {**data, **row}.items() if val != 'NA'}
             json_line = json.dumps(output_row)
-            f.write(json_line)
+            f.write(json_line + "\n")
     return json_filename
 
 
