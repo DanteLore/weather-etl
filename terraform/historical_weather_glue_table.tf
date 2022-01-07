@@ -155,10 +155,6 @@ resource "aws_glue_catalog_table" "historical_weather_glue_table" {
       name = "drv_hr_sun_dur"
       type = "float"
     }
-    columns {
-      name = "xxx"
-      type = "string"
-    }
   }
 
   partition_keys {
