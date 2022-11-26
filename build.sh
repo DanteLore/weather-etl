@@ -1,6 +1,9 @@
 mkdir build
 
-cp datapoint_etl/* build
+cp datapoint_etl/lambda_function.py build
+cp datapoint_etl/weather_etl.py build
+cp datapoint_etl/api_key.py build
+cp datapoint_etl/weather_schema.json build
 cp -Rf helpers build
 
 (
