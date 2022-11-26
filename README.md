@@ -1,4 +1,13 @@
-# Weather ETL
+# Weather Data Demo
+
+This project contains an example implementation of a basic but functional AWS data architecture.  
+Loading data from a variety of data sources, processing that data into a usable data lake etc.
+
+* **datapoint_etl** is a simple AWS Lambda function to load weather data from the UK Met Office's DataPoint API.
+* **ceda_bulk_data** is a script to import data from the CEDA historical weather data API.
+* **terraform** contains all the config to create all the required infra in AWS
+
+# DataPoint ETL
 
 A simple implementation of a working ETL in AWS.  Pulls data from the Met Office
 [DataPoint API](https://www.metoffice.gov.uk/services/data/datapoint) API, 
