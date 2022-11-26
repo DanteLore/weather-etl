@@ -1,5 +1,7 @@
 import unittest
+import sys
 
+sys.path.insert(1, '../datapoint_etl')
 from datapoint_etl.weather_etl import transform_observations_data
 
 
