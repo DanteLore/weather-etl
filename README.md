@@ -10,7 +10,7 @@ The lambda function also saves the raw input to a separate S3 bucket for replay 
 Finally, once data is loaded to the _incoming_ bucket, the function will update the relevant glue partition, 
 ensuring data is queryable as soon as it is added.
 
-![Architecture Diagram](docs/architecture.png)
+![Architecture Diagram](docs/datapoint_etl_architecture.png)
 
 This simple ETL gets you as far as usable data in S3/Athena. It's the first step to building a data platform in AWS.
 Using this raw incoming data comes with risks though - you're likely to see duplicates, missing fields and perhaps even 

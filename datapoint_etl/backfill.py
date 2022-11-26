@@ -1,4 +1,4 @@
-from aws_helpers import add_glue_partition_for, download_file_from_s3, load_file_to_s3
+from helpers.aws import add_glue_partition_for, download_file_from_s3, load_file_to_s3
 from weather_etl import transform_observations_data
 
 YEAR = 2022

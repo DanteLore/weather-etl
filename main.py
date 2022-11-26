@@ -1,12 +1,10 @@
-from aws_helpers import add_glue_partition_for
-from datetime import datetime
-from weather_etl import extract_observations_data, transform_observations_data, validate_json
+from datapoint_etl.weather_etl import extract_observations_data, transform_observations_data, validate_json
 
 # https://www.metoffice.gov.uk/services/data/datapoint
 
 INPUT_FILE = 'weatherData/response.json'
 OUTPUT_FILE = 'weatherData/last_24h_observations_uk.json'
-JSON_SCHEMA_FILE = 'weather_schema.json'
+JSON_SCHEMA_FILE = 'datapoint_etl/weather_schema.json'
 
 if __name__ == '__main__':
     extract_observations_data(INPUT_FILE)

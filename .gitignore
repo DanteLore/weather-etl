@@ -1,7 +1,7 @@
 
 
 weatherData/*
-api_key.py
+datapoint_etl/api_key.py
 *.zip
 .terraform*
 terraform.tfstate*

@@ -1,6 +1,6 @@
 import unittest
 
-from weather_etl import transform_observations_data
+from datapoint_etl.weather_etl import transform_observations_data
 
 
 class ParsingTests(unittest.TestCase):

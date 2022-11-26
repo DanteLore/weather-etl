@@ -2,6 +2,15 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+terraform {
+  backend "s3" {
+    # Replace this with your bucket name!
+    bucket         = "dantelore.tfstate"
+    key            = "weather.tfstate"
+    region         = "eu-west-1"
+  }
+}
+
 variable "function_name" {
   default = "load_weather_data"
 }
@@ -11,7 +20,7 @@ variable "handler" {
 }
 
 variable "runtime" {
-  default = "python3.6"
+  default = "python3.9"
 }
 
 resource "aws_cloudwatch_log_group" "loggroup" {
@@ -23,20 +32,20 @@ resource "aws_lambda_function" "lambda_function" {
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = var.handler
   runtime          = var.runtime
-  filename         = "lambda.zip"
+  filename         = "weather_etl.zip"
   function_name    = var.function_name
-  source_code_hash = filebase64sha256("lambda.zip")
+  source_code_hash = filebase64sha256("weather_etl.zip")
   timeout          = 60
 }
 
-resource "aws_cloudwatch_event_rule" "time_to_load_the_data" {
-  name                = "time_to_load_the_data"
-  description         = "Grab the data just after mi§dnight"
+resource "aws_cloudwatch_event_rule" "time_to_load_weather_data" {
+  name                = "time_to_load_weather_data"
+  description         = "Grab the data just before midnight"
   schedule_expression = "cron(50 23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "load_data_at_half_past_midnight" {
-  rule      = aws_cloudwatch_event_rule.time_to_load_the_data.name
+  rule      = aws_cloudwatch_event_rule.time_to_load_weather_data.name
   target_id = "lambda"
   arn       = aws_lambda_function.lambda_function.arn
 }
@@ -46,11 +55,11 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.time_to_load_the_data.arn
+  source_arn    = aws_cloudwatch_event_rule.time_to_load_weather_data.arn
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
-  name        = "execute_weather_data_lambda"
+  name        = "execute_weather_etl_lambda"
   path        = "/"
   description = "IAM role for the Weather Data lambda function"
 
@@ -71,7 +80,7 @@ EOF
 }
 
 resource "aws_iam_policy" "lambda_policy" {
-  name        = "weather_data_policy"
+  name        = "weather_etl_policy"
   path        = "/"
 
   policy = <<EOF
@@ -133,6 +142,6 @@ resource "aws_iam_role_policy_attachment" "server_policy" {
 }
 
 resource "aws_iam_instance_profile" "server" {
-  name = "lambda_profile"
+  name = "weather_etl_lambda_profile"
   role = aws_iam_role.lambda_exec_role.name
 }

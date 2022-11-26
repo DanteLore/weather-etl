@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-from aws_helpers import load_file_to_s3
+from helpers.aws import load_file_to_s3
 from ceda_auth_helpers import setup_credentials, CREDENTIALS_FILE_PATH, CERTS_DIR
 
 LOCAL_FILE_STORE = "weatherData/midas"
