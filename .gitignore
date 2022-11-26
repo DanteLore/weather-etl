@@ -5,7 +5,8 @@ datapoint_etl/api_key.py
 *.zip
 .terraform*
 terraform.tfstate*
-lambda.zip
+
+.DS_Store
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,python

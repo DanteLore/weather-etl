@@ -1,15 +1,4 @@
-provider "aws" {
-  region = "eu-west-1"
-}
 
-terraform {
-  backend "s3" {
-    # Replace this with your bucket name!
-    bucket         = "dantelore.tfstate"
-    key            = "weather.tfstate"
-    region         = "eu-west-1"
-  }
-}
 
 variable "function_name" {
   default = "load_weather_data"
