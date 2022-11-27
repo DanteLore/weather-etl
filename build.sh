@@ -1,3 +1,5 @@
+
+echo "Building the Weather ETL"
 mkdir build
 
 cp datapoint_etl/lambda_function.py build
@@ -13,8 +15,23 @@ cp -Rf helpers build
 )
 rm -rf build
 
+echo "Building the Weather Data Modeller"
+mkdir build
+
+cp weather_data_model/lambda_function.py build
+cp -Rf helpers build
+
+(
+  cd build || exit
+  pip install --target . -r ../requirements.txt
+  zip -r -u ../terraform/weather_data_model.zip ./*
+)
+rm -rf build
+
+echo "Terraform time!"
 (
   cd terraform || exit
   terraform apply -auto-approve
   rm -rf weather_etl.zip
+  rm -rf weather_data_model.zip
 )

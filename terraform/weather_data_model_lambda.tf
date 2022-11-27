@@ -1,52 +1,52 @@
-variable "datapoint_etl_function_name" {
-  default = "load_weather_data"
+variable "weather_data_model_lambda" {
+  default = "model_weather_data"
 }
 
-variable "datapoint_etl_handler" {
+variable "weather_data_model_handler" {
   default = "lambda_function.handler"
 }
 
-variable "datapoint_etl_cloudwatch_event" {
+variable "weather_data_model_cloudwatch_event" {
   default = "time_to_load_weather_data"
 }
 
-resource "aws_cloudwatch_log_group" "datapoint_etl_loggroup" {
-  name              = "/aws/lambda/${var.datapoint_etl_function_name}"
+resource "aws_cloudwatch_log_group" "weather_data_model_loggroup" {
+  name              = "/aws/lambda/${var.weather_data_model_lambda}"
   retention_in_days = 3
 }
 
-resource "aws_lambda_function" "datapoint_etl_lambda_function" {
-  role             = aws_iam_role.datapoint_etl_lambda_exec_role.arn
-  handler          = var.datapoint_etl_handler
+resource "aws_lambda_function" "weather_data_model_lambda_function" {
+  role             = aws_iam_role.weather_data_model_lambda_exec_role.arn
+  handler          = var.weather_data_model_handler
   runtime          = var.runtime
-  filename         = "weather_etl.zip"
-  function_name    = var.datapoint_etl_function_name
-  source_code_hash = filebase64sha256("weather_etl.zip")
+  filename         = "weather_data_model.zip"
+  function_name    = var.weather_data_model_lambda
+  source_code_hash = filebase64sha256("weather_data_model.zip")
   timeout          = 60
 }
 
-resource "aws_cloudwatch_event_rule" "time_to_load_weather_data" {
-  name                = var.datapoint_etl_cloudwatch_event
-  description         = "Grab the data just before midnight"
-  schedule_expression = "cron(50 23 * * ? *)"
+resource "aws_cloudwatch_event_rule" "time_to_model_weather_data" {
+  name                = var.weather_data_model_cloudwatch_event
+  description         = "Process the data just before work starts"
+  schedule_expression = "cron(0 6 * * ? *)"
 }
 
-resource "aws_cloudwatch_event_target" "load_data_at_half_past_midnight" {
+resource "aws_cloudwatch_event_target" "model_data_in_the_morning" {
   rule      = aws_cloudwatch_event_rule.time_to_load_weather_data.name
   target_id = "lambda"
-  arn       = aws_lambda_function.datapoint_etl_lambda_function.arn
+  arn       = aws_lambda_function.weather_data_model_lambda_function.arn
 }
 
-resource "aws_lambda_permission" "datapoint_etl_allow_cloudwatch_to_call_lambda" {
+resource "aws_lambda_permission" "weather_data_model_allow_cloudwatch_to_call_lambda" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.datapoint_etl_lambda_function.function_name
+  function_name = aws_lambda_function.weather_data_model_lambda_function.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.time_to_load_weather_data.arn
 }
 
-resource "aws_iam_role" "datapoint_etl_lambda_exec_role" {
-  name        = "execute_weather_etl_lambda"
+resource "aws_iam_role" "weather_data_model_lambda_exec_role" {
+  name        = "execute_weather_data_model_lambda"
   path        = "/"
   description = "IAM role for the Weather Data lambda function"
 
@@ -66,8 +66,8 @@ resource "aws_iam_role" "datapoint_etl_lambda_exec_role" {
 EOF
 }
 
-resource "aws_iam_policy" "datapoint_etl_lambda_policy" {
-  name        = "weather_etl_policy"
+resource "aws_iam_policy" "weather_data_model_lambda_policy" {
+  name        = "weather_data_model_policy"
   path        = "/"
 
   policy = <<EOF
@@ -109,8 +109,8 @@ resource "aws_iam_policy" "datapoint_etl_lambda_policy" {
       "Resource": [
           "arn:aws:s3:::dantelore.data.incoming",
           "arn:aws:s3:::dantelore.data.incoming/*",
-          "arn:aws:s3:::dantelore.data.raw",
-          "arn:aws:s3:::dantelore.data.raw/*",
+          "arn:aws:s3:::dantelore.data.lake",
+          "arn:aws:s3:::dantelore.data.lake/*",
           "arn:aws:s3:::dantelore.queryresults",
           "arn:aws:s3:::dantelore.queryresults/*"
       ]
@@ -123,12 +123,12 @@ resource "aws_iam_policy" "datapoint_etl_lambda_policy" {
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "datapoint_etl_server_policy" {
-  role       = aws_iam_role.datapoint_etl_lambda_exec_role.name
-  policy_arn = aws_iam_policy.datapoint_etl_lambda_policy.arn
+resource "aws_iam_role_policy_attachment" "weather_data_model_server_policy" {
+  role       = aws_iam_role.weather_data_model_lambda_exec_role.name
+  policy_arn = aws_iam_policy.weather_data_model_lambda_policy.arn
 }
 
-resource "aws_iam_instance_profile" "datapoint_etl_server" {
-  name = "weather_etl_lambda_profile"
-  role = aws_iam_role.datapoint_etl_lambda_exec_role.name
+resource "aws_iam_instance_profile" "weather_data_model_server" {
+  name = "weather_data_model_lambda_profile"
+  role = aws_iam_role.weather_data_model_lambda_exec_role.name
 }
