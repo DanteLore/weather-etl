@@ -1,6 +1,7 @@
 import boto3
 from time import sleep
 
+# Should be using https://github.com/laughingman7743/PyAthena
 
 def load_file_to_s3(filename, s3_bucket, s3_key):
     print("Uploading data to S3://{0}/{1}".format(s3_bucket, s3_key))

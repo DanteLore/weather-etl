@@ -7,7 +7,7 @@ variable "weather_data_model_handler" {
 }
 
 variable "weather_data_model_cloudwatch_event" {
-  default = "time_to_load_weather_data"
+  default = "time_to_model_weather_data"
 }
 
 resource "aws_cloudwatch_log_group" "weather_data_model_loggroup" {
@@ -32,7 +32,7 @@ resource "aws_cloudwatch_event_rule" "time_to_model_weather_data" {
 }
 
 resource "aws_cloudwatch_event_target" "model_data_in_the_morning" {
-  rule      = aws_cloudwatch_event_rule.time_to_load_weather_data.name
+  rule      = aws_cloudwatch_event_rule.time_to_model_weather_data.name
   target_id = "lambda"
   arn       = aws_lambda_function.weather_data_model_lambda_function.arn
 }
@@ -42,7 +42,7 @@ resource "aws_lambda_permission" "weather_data_model_allow_cloudwatch_to_call_la
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.weather_data_model_lambda_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.time_to_load_weather_data.arn
+  source_arn    = aws_cloudwatch_event_rule.time_to_model_weather_data.arn
 }
 
 resource "aws_iam_role" "weather_data_model_lambda_exec_role" {
