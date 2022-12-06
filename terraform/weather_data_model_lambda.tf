@@ -90,8 +90,7 @@ resource "aws_iam_policy" "weather_data_model_lambda_policy" {
       ],
       "Resource": [
           "*"
-      ]
-      ,
+      ],
       "Effect": "Allow",
       "Sid": ""
     },
@@ -115,6 +114,16 @@ resource "aws_iam_policy" "weather_data_model_lambda_policy" {
           "arn:aws:s3:::dantelore.queryresults/*"
       ]
       ,
+      "Effect": "Allow",
+      "Sid": ""
+    },
+    {
+      "Action": [
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+          "arn:aws:s3:::dantelore.data.lake/weather/*"
+      ],
       "Effect": "Allow",
       "Sid": ""
     }

@@ -1,4 +1,4 @@
-from helpers.aws import execute_athena_command
+from helpers.aws import execute_athena_command, delete_folder_from_s3
 from datetime import datetime
 
 S3_INCOMING_BUCKET = "dantelore.data.incoming"
@@ -57,7 +57,8 @@ where rn = 1
 
 
 def build_data_models(incoming_bucket, data_lake_bucket):
-    print("Modelled!")
+    delete_folder_from_s3(data_lake_bucket, 'weather/')
+    execute_athena_command(sql=SQL, wait_seconds=120)
 
 
 def handler(event, context):
