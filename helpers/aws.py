@@ -41,7 +41,7 @@ def add_glue_partition_for(year, month, day):
     execute_athena_command(sql)
 
 
-def execute_athena_command(sql, wait_seconds=10):
+def execute_athena_command(sql: str, wait_seconds: int = 10):
     athena = boto3.client('athena')
 
     print("Executing: " + sql)
@@ -71,3 +71,36 @@ def execute_athena_command(sql, wait_seconds=10):
         sleep(1)
 
     return False
+
+
+def execute_athena_query(sql: str, wait_seconds: int = 30):
+    query_results_bucket = "dantelore.queryresults"  # Not the best place to store this - but it's only for notebooks...
+
+    athena = boto3.client('athena')
+
+    query_start = athena.start_query_execution(
+        QueryString=sql,
+        QueryExecutionContext={
+            'Database': "incoming"
+        },
+        ResultConfiguration={
+            'OutputLocation': f"s3://{query_results_bucket}/Unsaved/"
+        }
+    )
+
+    for count in range(wait_seconds):
+        query_execution = athena.get_query_execution(QueryExecutionId=query_start['QueryExecutionId'])
+        state = query_execution.get('QueryExecution', {}).get('Status', {}).get('State')
+
+        if state == 'FAILED':
+            print(
+                "Query failed: " + query_execution.get('QueryExecution', {}).get('Status', {}).get('StateChangeReason')
+            )
+            return None
+        elif state == 'SUCCEEDED':
+            return query_execution['QueryExecution']['ResultConfiguration']['OutputLocation']
+
+        sleep(1)
+
+    print(f"Query timed out after {wait_seconds} attempts")
+    return None
