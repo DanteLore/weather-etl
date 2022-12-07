@@ -1,11 +1,9 @@
 from helpers.aws import execute_athena_command, delete_folder_from_s3
-from datetime import datetime
 
-S3_INCOMING_BUCKET = "dantelore.data.incoming"
 S3_DATA_LAKE_BUCKET = "dantelore.data.lake"
 
-
-SQL = '''
+WEATHER_DIR_NAME = 'weather/'
+WEATHER_TABLE_SQL = '''
 insert into lake.weather
 select 
     observation_ts,    
@@ -56,15 +54,47 @@ from
 where rn = 1
 '''
 
+SUMMARY_DIR_NAME = 'weather_monthly_site_summary/'
+SUMMARY_TABLE_SQL = '''
+insert into lake.weather_monthly_site_summary (
+    site_id,
+    site_name,
+    lat,
+    lon,
+    year,
+    month,
+    low_temp,
+    high_temp,
+    median_temp
+)
+select 
+    site_id,
+    site_name,
+    lat,
+    lon,
+    YEAR(observation_ts) as obs_year,
+    MONTH(observation_ts) as obs_month,
+    approx_percentile(temperature, 0.05) as low_temp,
+    approx_percentile(temperature, 0.95) as high_temp,
+    approx_percentile(temperature, 0.50) as median_temp
+from lake.weather
+group by site_id, site_name, lat, lon, YEAR(observation_ts), MONTH(observation_ts)
+'''
 
-def build_data_models(incoming_bucket, data_lake_bucket):
-    delete_folder_from_s3(data_lake_bucket, 'weather/')
-    execute_athena_command(sql=SQL, wait_seconds=120)
+
+def build_data_models(data_lake_bucket):
+    # Create the core model
+    delete_folder_from_s3(data_lake_bucket, WEATHER_DIR_NAME)
+    execute_athena_command(sql=WEATHER_TABLE_SQL, wait_seconds=120)
+
+    # Create the summary table
+    delete_folder_from_s3(data_lake_bucket, SUMMARY_DIR_NAME)
+    execute_athena_command(sql=SUMMARY_TABLE_SQL, wait_seconds=120)
 
 
 def handler(event, context):
     try:
-        build_data_models(S3_INCOMING_BUCKET, S3_DATA_LAKE_BUCKET)
+        build_data_models(S3_DATA_LAKE_BUCKET)
     except Exception as e:
         print("Failed to transform data")
         print(e)
