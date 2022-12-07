@@ -30,27 +30,28 @@ select
 from 
 ( 
     select 
-    observation_ts,    
-    site_id,             
-    site_name,           
-    site_country,        
-    site_continent,      
-    site_elevation,      
-    lat,                 
-    lon,                 
-    wind_direction,      	
-    screen_relative_humidity,
-    pressure,            	
-    wind_speed,          	
-    temperature,         	
-    visibility,          	
-    weather_type,
-    pressure_tendency,
-    dew_point, 
-    month(observation_ts) as obs_month,
-    year(observation_ts) as obs_year,
-    ROW_NUMBER() OVER ( PARTITION BY date_trunc('hour', observation_ts), site_id ORDER BY observation_ts DESC ) as rn
+        observation_ts,    
+        site_id,             
+        site_name,           
+        site_country,        
+        site_continent,      
+        site_elevation,      
+        lat,                 
+        lon,                 
+        wind_direction,      	
+        screen_relative_humidity,
+        pressure,            	
+        wind_speed,          	
+        temperature,         	
+        visibility,          	
+        weather_type,
+        pressure_tendency,
+        dew_point, 
+        month(observation_ts) as obs_month,
+        year(observation_ts) as obs_year,
+        ROW_NUMBER() OVER ( PARTITION BY date_trunc('hour', observation_ts), site_id ORDER BY observation_ts DESC ) as rn
     from weather
+    where (year <> '2022' and month <> '7' and site_name <> 'CHIVENOR' or temperature > -5) -- exclude broken readings from Chivenor
 )
 where rn = 1
 '''
