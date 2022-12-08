@@ -10,8 +10,8 @@ cp -Rf helpers build
 
 (
   cd build || exit
-  pip install --target . -r ../requirements.txt
-  zip -r -u ../terraform/weather_etl.zip ./*
+  pip install --quiet --target . -r ../requirements.txt
+  zip -qq -r -u ../terraform/weather_etl.zip ./*
 )
 rm -rf build
 
@@ -23,8 +23,8 @@ cp -Rf helpers build
 
 (
   cd build || exit
-  pip install --target . -r ../requirements.txt
-  zip -r -u ../terraform/weather_data_model.zip ./*
+  pip install --quiet --target . -r ../requirements.txt
+  zip -qq -r -u ../terraform/weather_data_model.zip ./*
 )
 rm -rf build
 
