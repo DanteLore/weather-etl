@@ -1,18 +1,15 @@
-from datapoint_etl.weather_etl import extract_observations_data, transform_observations_data, validate_json
+from datahub_etl.weather_etl import extract_observations_data, transform_observations_data
 
-# https://www.metoffice.gov.uk/services/data/datapoint
-
-INPUT_FILE = 'weatherData/response.json'
-OUTPUT_FILE = 'weatherData/last_24h_observations_uk.json'
-JSON_SCHEMA_FILE = 'datapoint_etl/weather_schema.json'
+INPUT_FILE = 'weatherData/datahub_raw.json'
+OUTPUT_FILE = 'weatherData/datahub_observations.json'
 
 if __name__ == '__main__':
+    print("Fetching observations from Met Office DataHub API...")
     extract_observations_data(INPUT_FILE)
+
+    print("\nTransforming observations to legacy format...")
     transform_observations_data(INPUT_FILE, OUTPUT_FILE)
 
-    print("Validating data against JSON schema...")
-    validate_json(OUTPUT_FILE, JSON_SCHEMA_FILE)
-    print("Done!")
-
-    #today = datetime.today()
-    #add_glue_partition_for(today.year, today.month, today.day)
+    print("\nDone! Check the output files:")
+    print(f"  Raw: {INPUT_FILE}")
+    print(f"  Transformed: {OUTPUT_FILE}")

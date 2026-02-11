@@ -1,4 +1,5 @@
 import boto3
+import json
 from time import sleep
 
 
@@ -34,6 +35,35 @@ def delete_folder_from_s3(s3_bucket, folder_key):
     for f in objects:
         print("Deleting: " + f.key)
         f.delete()
+
+
+def load_json_from_s3(s3_bucket, s3_key):
+    try:
+        s3 = boto3.client('s3')
+        response = s3.get_object(Bucket=s3_bucket, Key=s3_key)
+        content = response['Body'].read().decode('utf-8')
+        return json.loads(content)
+    except s3.exceptions.NoSuchKey:
+        return None
+    except Exception as e:
+        print(f"Failed to load JSON from S3://{s3_bucket}/{s3_key}: {e}")
+        return None
+
+
+def save_json_to_s3(data, s3_bucket, s3_key):
+    try:
+        s3 = boto3.client('s3')
+        s3.put_object(
+            Bucket=s3_bucket,
+            Key=s3_key,
+            Body=json.dumps(data, indent=2),
+            ContentType='application/json'
+        )
+        print(f"Saved JSON to S3://{s3_bucket}/{s3_key}")
+        return True
+    except Exception as e:
+        print(f"Failed to save JSON to S3://{s3_bucket}/{s3_key}: {e}")
+        return False
 
 
 def add_glue_partition_for(year, month, day):
