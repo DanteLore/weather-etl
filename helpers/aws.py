@@ -1,40 +1,36 @@
 import boto3
 import json
 from time import sleep
+from botocore.exceptions import ClientError
 
 
 # Should be using https://github.com/laughingman7743/PyAthena
 
 def load_file_to_s3(filename, s3_bucket, s3_key):
-    print("Uploading data to S3://{0}/{1}".format(s3_bucket, s3_key))
+    print(f"Uploading data to S3://{s3_bucket}/{s3_key}")
 
-    s3 = boto3.resource('s3')
-    s3.Bucket(s3_bucket).upload_file(
-        filename,
-        s3_key
-    )
+    s3 = boto3.client('s3')
+    s3.upload_file(filename, s3_bucket, s3_key)
 
 
 def download_file_from_s3(s3_bucket, s3_key, filename):
-    print("Downloading data from S3://{0}/{1}".format(s3_bucket, s3_key))
+    print(f"Downloading data from S3://{s3_bucket}/{s3_key}")
 
-    s3 = boto3.resource('s3')
-    s3.Bucket(s3_bucket).download_file(
-        s3_key,
-        filename
-    )
+    s3 = boto3.client('s3')
+    s3.download_file(s3_bucket, s3_key, filename)
 
 
 def delete_folder_from_s3(s3_bucket, folder_key):
-    print("Deleting all files in S3://{0}/{1}".format(s3_bucket, folder_key))
+    print(f"Deleting all files in S3://{s3_bucket}/{folder_key}")
 
-    s3 = boto3.resource('s3')
+    s3 = boto3.client('s3')
+    paginator = s3.get_paginator('list_objects_v2')
 
-    objects = s3.Bucket(s3_bucket).objects.filter(Prefix=folder_key)
-
-    for f in objects:
-        print("Deleting: " + f.key)
-        f.delete()
+    for page in paginator.paginate(Bucket=s3_bucket, Prefix=folder_key):
+        if 'Contents' in page:
+            for obj in page['Contents']:
+                print(f"Deleting: {obj['Key']}")
+                s3.delete_object(Bucket=s3_bucket, Key=obj['Key'])
 
 
 def load_json_from_s3(s3_bucket, s3_key):
@@ -43,7 +39,10 @@ def load_json_from_s3(s3_bucket, s3_key):
         response = s3.get_object(Bucket=s3_bucket, Key=s3_key)
         content = response['Body'].read().decode('utf-8')
         return json.loads(content)
-    except s3.exceptions.NoSuchKey:
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            return None
+        print(f"Failed to load JSON from S3://{s3_bucket}/{s3_key}: {e}")
         return None
     except Exception as e:
         print(f"Failed to load JSON from S3://{s3_bucket}/{s3_key}: {e}")
@@ -66,23 +65,23 @@ def save_json_to_s3(data, s3_bucket, s3_key):
         return False
 
 
-def add_glue_partition_for(year, month, day):
-    sql = f"ALTER TABLE weather ADD IF NOT EXISTS PARTITION (year='{year}', month='{month}', day='{day}')"
-    execute_athena_command(sql)
+def add_glue_partition_for(year, month, day, table, database, results_bucket):
+    sql = f"ALTER TABLE {table} ADD IF NOT EXISTS PARTITION (year='{year}', month='{month}', day='{day}')"
+    execute_athena_command(sql, database, results_bucket)
 
 
-def execute_athena_command(sql: str, wait_seconds: int = 10):
+def execute_athena_command(sql, database, results_bucket, wait_seconds=10):
     athena = boto3.client('athena')
 
-    print("Executing: " + sql)
+    print(f"Executing: {sql}")
 
     query_start = athena.start_query_execution(
         QueryString=sql,
         QueryExecutionContext={
-            'Database': "incoming"
+            'Database': database
         },
         ResultConfiguration={
-            'OutputLocation': "s3://dantelore.queryresults/Unsaved/"
+            'OutputLocation': f"s3://{results_bucket}/Unsaved/"
         }
     )
 
@@ -91,30 +90,29 @@ def execute_athena_command(sql: str, wait_seconds: int = 10):
         state = query_execution.get('QueryExecution', {}).get('Status', {}).get('State')
 
         if state == 'FAILED':
-            print("Query failed : " + query_execution.get('QueryExecution', {}).get('Status', {}).get(
-                'StateChangeReason'))
-            break
+            reason = query_execution.get('QueryExecution', {}).get('Status', {}).get('StateChangeReason')
+            print(f"Query failed: {reason}")
+            return False
         elif state == 'SUCCEEDED':
             print('Query succeeded')
-            break
+            return True
 
         sleep(1)
 
+    print(f"Query timed out after {wait_seconds} seconds")
     return False
 
 
-def execute_athena_query(sql: str, wait_seconds: int = 30):
-    query_results_bucket = "dantelore.queryresults"  # Not the best place to store this - but it's only for notebooks...
-
+def execute_athena_query(sql, database, results_bucket, wait_seconds=30):
     athena = boto3.client('athena')
 
     query_start = athena.start_query_execution(
         QueryString=sql,
         QueryExecutionContext={
-            'Database': "incoming"
+            'Database': database
         },
         ResultConfiguration={
-            'OutputLocation': f"s3://{query_results_bucket}/Unsaved/"
+            'OutputLocation': f"s3://{results_bucket}/Unsaved/"
         }
     )
 

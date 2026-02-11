@@ -7,6 +7,9 @@ OUTPUT_FILE = "/tmp/observations.json"
 S3_INCOMING_BUCKET = "dantelore.data.incoming"
 S3_RAW_BUCKET = "dantelore.data.raw"
 S3_CACHE_KEY = "weather/geohash_cache.json"
+ATHENA_DATABASE = "incoming"
+ATHENA_TABLE = "weather"
+ATHENA_RESULTS_BUCKET = "dantelore.queryresults"
 
 
 def handler(event, context):
@@ -25,7 +28,7 @@ def handler(event, context):
     s3_key = f"weather/year={today.year}/month={today.month}/day={today.day}/observations.json"
 
     load_file_to_s3(OUTPUT_FILE, S3_INCOMING_BUCKET, s3_key)
-    add_glue_partition_for(today.year, today.month, today.day)
+    add_glue_partition_for(today.year, today.month, today.day, ATHENA_TABLE, ATHENA_DATABASE, ATHENA_RESULTS_BUCKET)
 
 
 def save_raw_data_to_s3(today):
