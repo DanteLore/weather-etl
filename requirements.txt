@@ -3,3 +3,9 @@ boto3
 jsonschema
 bs4
 pytest
+pandas
+matplotlib
+seaborn
+fsspec
+s3fs
+jinja2
