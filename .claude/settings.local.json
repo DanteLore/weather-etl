@@ -4,7 +4,8 @@
       "Bash(\".venv/Scripts/python.exe\" -m pip install -r requirements.txt)",
       "Bash(\".venv/Scripts/python.exe\" -m pytest tests/test_datahub_etl.py -v)",
       "Bash(pytest:*)",
-      "WebFetch(domain:dantelore.com)"
+      "WebFetch(domain:dantelore.com)",
+      "Bash(powershell.exe:*)"
     ]
   }
 }

@@ -1,4 +1,3 @@
-
 echo "Building the Weather ETL"
 mkdir build
 
@@ -14,7 +13,7 @@ cp -Rf helpers build
 (
   cd build || exit
   pip install --quiet --target . -r ../requirements.txt
-  zip -qq -r -u ../terraform/weather_etl.zip ./*
+  zip -qq -r ../terraform/weather_etl.zip ./*
 )
 rm -rf build
 
