@@ -33,6 +33,23 @@ def delete_folder_from_s3(s3_bucket, folder_key):
                 s3.delete_object(Bucket=s3_bucket, Key=obj['Key'])
 
 
+def load_text_from_s3(s3_bucket, s3_key):
+    """Load text content from S3 (CSV, plain text, etc.)"""
+    try:
+        s3 = boto3.client('s3')
+        response = s3.get_object(Bucket=s3_bucket, Key=s3_key)
+        content = response['Body'].read().decode('utf-8')
+        return content
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            return None
+        print(f"Failed to load text from S3://{s3_bucket}/{s3_key}: {e}")
+        return None
+    except Exception as e:
+        print(f"Failed to load text from S3://{s3_bucket}/{s3_key}: {e}")
+        return None
+
+
 def load_json_from_s3(s3_bucket, s3_key):
     try:
         s3 = boto3.client('s3')

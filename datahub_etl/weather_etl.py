@@ -1,6 +1,6 @@
 import json
 import os
-from datahub_etl.sites import SITES
+from datahub_etl.site_loader import get_sites
 
 CACHE_FILE = "datahub_etl/geohash_cache.json"
 
@@ -45,9 +45,10 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
     all_observations = []
     failed_sites = []
 
-    print(f"Fetching observations for {len(SITES)} sites")
+    sites = get_sites()
+    print(f"Fetching observations for {len(sites)} sites")
 
-    for site in SITES:
+    for site in sites:
         site_id = site["site_id"]
 
         try:

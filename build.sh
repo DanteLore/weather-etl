@@ -6,7 +6,8 @@ cp datahub_etl/lambda_function.py build
 cp datahub_etl/weather_etl.py build
 cp datahub_etl/api_key.py build
 cp datahub_etl/datahub_client.py build
-cp datahub_etl/sites.py build
+cp datahub_etl/site_loader.py build
+cp datahub_etl/sites.json build
 cp datahub_etl/geohash_cache.json build
 cp -Rf helpers build
 
@@ -16,6 +17,9 @@ cp -Rf helpers build
   zip -qq -r -u ../terraform/weather_etl.zip ./*
 )
 rm -rf build
+
+echo "Uploading weather station metadata to S3"
+aws s3 cp datahub_etl/sites.json s3://dantelore.data.lake/weather_stations/sites.json
 
 echo "Building the Weather Data Modeller"
 mkdir build

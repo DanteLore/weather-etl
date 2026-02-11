@@ -104,8 +104,8 @@ class TestDataTransformation:
 
 
 class TestExtractObservations:
-    @patch('datahub_etl.weather_etl.SITES', [SAMPLE_SITE])
-    def test_extract_with_cache_hit(self):
+    @patch('datahub_etl.weather_etl.get_sites', return_value=[SAMPLE_SITE])
+    def test_extract_with_cache_hit(self, mock_get_sites):
         mock_client = Mock()
         mock_client.get_observations.return_value = OBSERVATIONS_RESPONSE
 
@@ -130,8 +130,8 @@ class TestExtractObservations:
             if os.path.exists(output_file):
                 os.unlink(output_file)
 
-    @patch('datahub_etl.weather_etl.SITES', [SAMPLE_SITE])
-    def test_extract_with_cache_miss(self):
+    @patch('datahub_etl.weather_etl.get_sites', return_value=[SAMPLE_SITE])
+    def test_extract_with_cache_miss(self, mock_get_sites):
         mock_client = Mock()
         mock_client.get_nearest_station.return_value = NEAREST_STATION_RESPONSE
         mock_client.get_observations.return_value = OBSERVATIONS_RESPONSE
@@ -157,8 +157,8 @@ class TestExtractObservations:
             if os.path.exists(output_file):
                 os.unlink(output_file)
 
-    @patch('datahub_etl.weather_etl.SITES', [SAMPLE_SITE])
-    def test_extract_handles_api_errors(self):
+    @patch('datahub_etl.weather_etl.get_sites', return_value=[SAMPLE_SITE])
+    def test_extract_handles_api_errors(self, mock_get_sites):
         mock_client = Mock()
         mock_client.get_nearest_station.side_effect = Exception("API Error")
 
