@@ -2,10 +2,12 @@
 echo "Building the Weather ETL"
 mkdir build
 
-cp datapoint_etl/lambda_function.py build
-cp datapoint_etl/weather_etl.py build
-cp datapoint_etl/api_key.py build
-cp datapoint_etl/weather_schema.json build
+cp datahub_etl/lambda_function.py build
+cp datahub_etl/weather_etl.py build
+cp datahub_etl/api_key.py build
+cp datahub_etl/datahub_client.py build
+cp datahub_etl/sites.py build
+cp datahub_etl/geohash_cache.json build
 cp -Rf helpers build
 
 (
