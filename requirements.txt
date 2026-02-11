@@ -2,3 +2,4 @@ requests
 boto3
 jsonschema
 bs4
+pytest

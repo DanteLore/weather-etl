@@ -1,31 +1,8 @@
 import json
 import os
-from datetime import datetime
-import requests
-from datahub_etl.api_key import API_KEY
 from datahub_etl.sites import SITES
 
-BASE_URL = "https://data.hub.api.metoffice.gov.uk/observation-land/1"
 CACHE_FILE = "datahub_etl/geohash_cache.json"
-
-
-def get_headers():
-    return {"apikey": API_KEY}
-
-
-def nearest_station(lat, lon):
-    url = f"{BASE_URL}/nearest"
-    params = {"lat": round(lat, 2), "lon": round(lon, 2)}
-    response = requests.get(url, headers=get_headers(), params=params)
-    response.raise_for_status()
-    return response.json()
-
-
-def get_observations(geohash):
-    url = f"{BASE_URL}/{geohash}"
-    response = requests.get(url, headers=get_headers())
-    response.raise_for_status()
-    return response.json()
 
 
 def load_geohash_cache(cache_file=CACHE_FILE, s3_bucket=None, s3_key=None):
@@ -62,7 +39,7 @@ def save_geohash_cache(cache, cache_file=CACHE_FILE, s3_bucket=None, s3_key=None
             print(f"Could not save cache to S3: {e}")
 
 
-def extract_observations_data(filename, s3_bucket=None, s3_cache_key=None):
+def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=None):
     geohash_cache = load_geohash_cache(s3_bucket=s3_bucket, s3_key=s3_cache_key)
     cache_updated = False
     all_observations = []
@@ -77,7 +54,7 @@ def extract_observations_data(filename, s3_bucket=None, s3_cache_key=None):
             if site_id in geohash_cache:
                 geohash = geohash_cache[site_id]
             else:
-                station = nearest_station(site["lat"], site["lon"])
+                station = client.get_nearest_station(site["lat"], site["lon"])
                 if not station:
                     print(f"No station found for {site['site_name']}")
                     failed_sites.append(site["site_name"])
@@ -88,7 +65,7 @@ def extract_observations_data(filename, s3_bucket=None, s3_cache_key=None):
                 cache_updated = True
                 print(f"  Cached geohash for {site['site_name']}: {geohash}")
 
-            observations = get_observations(geohash)
+            observations = client.get_observations(geohash)
 
             if not observations:
                 print(f"No observations for {site['site_name']}")
