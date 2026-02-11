@@ -7,11 +7,11 @@ Loading data from a variety of data sources, processing that data into a usable 
 * <img src="docs/folder.png"/> <strong>ceda_bulk_data</strong> is a script to import data from the CEDA historical weather data API.
 * <img src="docs/folder.png"/> <strong>terraform</strong> contains all the config to create all the required infra in AWS
 
-# DataPoint ETL
+# Weather Data ETL
 
-A simple implementation of a working ETL in AWS.  Pulls data from the Met Office
+A simple implementation of a working ETL in AWS.  Pulls data from the Met Office [DataHub Observations](https://datahub.metoffice.gov.uk/docs/g/category/observations/overview) API.  It previously used the, now deprecated,
 [DataPoint API](https://www.metoffice.gov.uk/services/data/datapoint) API, 
-which provides 24 hourly weather observations in real-ish time.
+both of which provide observation data in real time.
 
 Data is currently pulled by a Python ETL, within a Lambda function, triggered just 
 before midnight each night.  Output is pushed to S3 in a more queryable JSON format.
@@ -31,6 +31,16 @@ weather data is quite Met Office specific. If we wanted to pull in data from oth
 schemas would be used. A downstream job could then be written to munge all these different sources into a single 
 consistent model of weather data worldwide - but this shouldn't be done in the ETL layer as it adds complex dependencies 
 and business logic we don't want or need.
+
+## DataHub update
+
+The move from the Datapoint to DataHub API has led to a few issues and changes:
+
+The original API allowed users to list sites and pull observations for each - allowing us to build a complete view of the UK.  The new API does not provide any site list functionality, instead allowing the client to pass a location (lat/lon) and returning a list of 1 to 5 nearest weather stations.  To get around this, we use the lat and lon locations for the weather stations we know about (see `sites.json`) to "seed" the location lookups - allowing the dataset to continue unchanged.
+
+There is a gap in the data over January 2026 as I did not get chance to fix the code before then.  I will come back to fix that from another source one day!
+
+The new DataHub API returns 48 hours of data for each run. We download every 24 hours, so we expect duplicates in the data. This actaully works well with our strategy of deduplicating as the data moves from `incoming` to `lake` - at the cost of a little extra storage, we get simple and robust handling for missing and late data (e.g. if something goes wrong, the data is fetched again at least once).
 
 ### Files of Interest
 * **weather_etl** the code that does the extract/transform of the data
