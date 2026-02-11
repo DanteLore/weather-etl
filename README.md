@@ -3,9 +3,12 @@
 This project contains an example implementation of a basic but functional AWS data architecture.  
 Loading data from a variety of data sources, processing that data into a usable data lake etc.
 
-* <img src="docs/folder.png"/> <strong>datapoint_etl</strong> is a simple AWS Lambda function to load weather data from the UK Met Office's DataPoint API.
+* <img src="docs/folder.png"/> <strong>datahub_etl</strong> is a simple AWS Lambda function to load weather data from the UK Met Office's DataHub Observations API.
+* <img src="docs/folder.png"/> <strong>datapoint_etl</strong> the old ETL which pulls from the now deprecated datapoint API.
 * <img src="docs/folder.png"/> <strong>ceda_bulk_data</strong> is a script to import data from the CEDA historical weather data API.
 * <img src="docs/folder.png"/> <strong>terraform</strong> contains all the config to create all the required infra in AWS
+* <img src="docs/folder.png"/> <strong>notebooks</strong> some notebooks with data quality views based on the data
+* <img src="docs/folder.png"/> <strong>weather_data_model</strong> a lambda function to model data from "raw incoming" to a clean, deduplicated dataset which could be used for analysis and product development
 
 # Weather Data ETL
 
