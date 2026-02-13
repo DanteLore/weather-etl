@@ -1,8 +1,8 @@
 from helpers.aws import load_file_to_s3, add_glue_partition_for
 from datetime import datetime
-from datahub_etl.weather_etl import extract_observations_data, transform_observations_data
-from datahub_etl.datahub_client import DataHubClient
-from datahub_etl.api_key import API_KEY
+from weather_etl import extract_observations_data, transform_observations_data
+from datahub_client import DataHubClient
+from api_key import API_KEY
 
 INPUT_FILE = "/tmp/weather_data.json"
 OUTPUT_FILE = "/tmp/observations.json"

@@ -1,4 +1,3 @@
-import os
 import csv
 import io
 from typing import List, Dict
@@ -59,31 +58,11 @@ def load_sites_from_athena(
     return sites
 
 
-def _load_sites_from_json() -> List[Dict]:
-    import json
-    sites_file = os.path.join(os.path.dirname(__file__), 'sites.json')
-    with open(sites_file, 'r') as f:
-        sites = json.load(f)
-    print(f"Using static site data from sites.json ({len(sites)} sites)")
-    return sites
-
-
 def get_sites(
-    use_athena: bool = None,
     database: str = "lake",
     results_bucket: str = "dantelore.queryresults"
 ) -> List[Dict]:
-    if use_athena is None:
-        use_athena = os.environ.get('USE_ATHENA_SITES', 'false').lower() == 'true'
-
-    if use_athena:
-        try:
-            return load_sites_from_athena(database, results_bucket)
-        except Exception as e:
-            print(f"ERROR: Failed to load sites from Athena: {e}")
-            print("Falling back to sites.json")
-
-    return _load_sites_from_json()
+    return load_sites_from_athena(database, results_bucket)
 
 
 def clear_cache():

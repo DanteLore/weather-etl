@@ -1,0 +1,11 @@
+-r requirements-lambda.txt
+boto3
+pytest
+pandas
+matplotlib
+seaborn
+fsspec
+s3fs
+jinja2
+jsonschema
+bs4

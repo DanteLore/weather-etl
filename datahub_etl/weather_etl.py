@@ -1,8 +1,8 @@
 import json
 import os
-from datahub_etl.site_loader import get_sites
+from site_loader import get_sites
 
-CACHE_FILE = "datahub_etl/geohash_cache.json"
+CACHE_FILE = "/tmp/geohash_cache.json"
 
 
 def load_geohash_cache(cache_file=CACHE_FILE, s3_bucket=None, s3_key=None):

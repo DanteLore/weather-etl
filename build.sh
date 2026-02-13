@@ -1,5 +1,5 @@
 echo "Building the Weather ETL"
-mkdir build
+mkdir build || exit
 
 cp datahub_etl/lambda_function.py build
 cp datahub_etl/weather_etl.py build
@@ -12,7 +12,7 @@ cp -Rf helpers build
 
 (
   cd build || exit
-  pip install --quiet --target . -r ../requirements.txt
+  pip install --quiet --target . -r ../requirements-lambda.txt
   zip -qq -r ../terraform/weather_etl.zip ./*
 )
 rm -rf build
@@ -28,7 +28,7 @@ cp -Rf helpers build
 
 (
   cd build || exit
-  pip install --quiet --target . -r ../requirements.txt
+  pip install --quiet --target . -r ../requirements-lambda.txt
   zip -qq -r -u ../terraform/weather_data_model.zip ./*
 )
 rm -rf build

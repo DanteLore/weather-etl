@@ -111,6 +111,8 @@ resource "aws_iam_policy" "datapoint_etl_lambda_policy" {
           "arn:aws:s3:::dantelore.data.incoming/*",
           "arn:aws:s3:::dantelore.data.raw",
           "arn:aws:s3:::dantelore.data.raw/*",
+          "arn:aws:s3:::dantelore.data.lake",
+          "arn:aws:s3:::dantelore.data.lake/*",
           "arn:aws:s3:::dantelore.queryresults",
           "arn:aws:s3:::dantelore.queryresults/*"
       ]

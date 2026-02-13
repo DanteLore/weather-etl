@@ -5,7 +5,8 @@
       "Bash(\".venv/Scripts/python.exe\" -m pytest tests/test_datahub_etl.py -v)",
       "Bash(pytest:*)",
       "WebFetch(domain:dantelore.com)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "WebFetch(domain:datahub.metoffice.gov.uk)"
     ]
   }
 }
