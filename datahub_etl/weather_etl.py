@@ -137,8 +137,16 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
                 failed_sites.append(site["site_name"])
 
         except Exception as e:
-            print(f"Failed to fetch {site['site_name']}: {e}")
+            error_msg = str(e)
+            print(f"Failed to fetch {site['site_name']}: {error_msg}")
             failed_sites.append(site["site_name"])
+
+            if "429" in error_msg or "Too Many Requests" in error_msg:
+                print(f"  Rate limited on {site['site_name']}, marking as fetched to move on")
+                cache_entry = geohash_cache.get(site["site_id"], {})
+                if isinstance(cache_entry, dict) and cache_entry.get("geohash"):
+                    _update_cache_for_site(site["site_id"], cache_entry["geohash"], geohash_cache)
+                    cache_updated = True
 
     if cache_updated:
         save_geohash_cache(geohash_cache, s3_bucket=s3_bucket, s3_key=s3_cache_key)
