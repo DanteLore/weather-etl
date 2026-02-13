@@ -1,3 +1,6 @@
+echo "Running tests..."
+pytest tests/ || exit 1
+
 echo "Building the Weather ETL"
 mkdir build || exit
 

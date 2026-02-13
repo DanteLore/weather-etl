@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timezone
-from site_loader import get_sites
+from .site_loader import get_sites
 
 CACHE_FILE = "/tmp/geohash_cache.json"
 
@@ -40,16 +40,10 @@ def save_geohash_cache(cache, cache_file=CACHE_FILE, s3_bucket=None, s3_key=None
             print(f"Could not save cache to S3: {e}")
 
 
-def _normalize_cache_entry(cache_entry):
-    if isinstance(cache_entry, str):
-        return {"geohash": cache_entry, "last_fetched": None}
-    return cache_entry
-
-
 def _build_site_priority_queue(all_sites, geohash_cache):
     sites_with_priority = []
     for site in all_sites:
-        cache_entry = _normalize_cache_entry(geohash_cache.get(site["site_id"], {}))
+        cache_entry = geohash_cache.get(site["site_id"], {})
         last_fetched = cache_entry.get("last_fetched") or "1970-01-01T00:00:00Z"
         sites_with_priority.append((site, last_fetched))
 
@@ -59,7 +53,7 @@ def _build_site_priority_queue(all_sites, geohash_cache):
 
 def _fetch_geohash_for_site(site, client, geohash_cache):
     cache_entry = geohash_cache.get(site["site_id"], {})
-    geohash = cache_entry.get("geohash") if isinstance(cache_entry, dict) else cache_entry
+    geohash = cache_entry.get("geohash")
 
     if geohash:
         return geohash
@@ -105,20 +99,15 @@ def _write_observations_to_file(observations, filename):
     print(f"Wrote {len(observations)} observations to {filename}")
 
 
-def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=None):
+def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=None, batch_size=None):
     geohash_cache = load_geohash_cache(s3_bucket=s3_bucket, s3_key=s3_cache_key)
     cache_updated = False
     all_observations = []
     failed_sites = []
 
     all_sites = get_sites()
-    batch_size = max(1, len(all_sites) // 24)
-
-    for site_id in geohash_cache:
-        normalized = _normalize_cache_entry(geohash_cache[site_id])
-        if normalized != geohash_cache[site_id]:
-            geohash_cache[site_id] = normalized
-            cache_updated = True
+    if batch_size is None:
+        batch_size = max(1, len(all_sites) // 24)
 
     sites_with_priority = _build_site_priority_queue(all_sites, geohash_cache)
     sites_to_fetch = [site for site, _ in sites_with_priority[:batch_size]]
@@ -144,7 +133,7 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
             if "429" in error_msg or "Too Many Requests" in error_msg:
                 print(f"  Rate limited on {site['site_name']}, marking as fetched to move on")
                 cache_entry = geohash_cache.get(site["site_id"], {})
-                if isinstance(cache_entry, dict) and cache_entry.get("geohash"):
+                if cache_entry.get("geohash"):
                     _update_cache_for_site(site["site_id"], cache_entry["geohash"], geohash_cache)
                     cache_updated = True
 

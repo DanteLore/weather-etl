@@ -10,39 +10,27 @@ class TestGetSites:
         """Clear cache before each test"""
         clear_cache()
 
-    def test_get_sites_defaults_to_sites_json(self):
-        """When USE_ATHENA_SITES not set, should use sites.json"""
-        sites = get_sites()
-
-        assert len(sites) == 135  # Known count from sites.json
-        assert sites[0]['site_id'] == '3005'  # First site
-        assert all('site_name' in s for s in sites)
-
-    @patch.dict(os.environ, {'USE_ATHENA_SITES': 'false'})
-    def test_get_sites_respects_env_var_false(self):
-        """When env var is false, should use sites.json"""
-        sites = get_sites()
-        assert len(sites) == 135
-
     @patch('datahub_etl.site_loader.load_sites_from_athena')
-    def test_get_sites_uses_athena_when_explicit(self, mock_load):
-        """When use_athena=True, should call Athena loader"""
+    def test_get_sites_loads_from_athena(self, mock_load):
+        """get_sites should load from Athena"""
         mock_load.return_value = [SAMPLE_SITE]
 
-        sites = get_sites(use_athena=True)
+        sites = get_sites()
 
         mock_load.assert_called_once()
         assert sites == [SAMPLE_SITE]
+        assert all('site_name' in s for s in sites)
 
+    @patch.dict(os.environ, {'USE_ATHENA_SITES': 'false'})
     @patch('datahub_etl.site_loader.load_sites_from_athena')
-    def test_get_sites_falls_back_on_athena_error(self, mock_load):
-        """When Athena fails, should fall back to sites.json"""
-        mock_load.side_effect = Exception("Athena connection failed")
+    def test_get_sites_respects_env_var_false(self, mock_load):
+        """Env var no longer used, always loads from Athena"""
+        mock_load.return_value = [SAMPLE_SITE]
 
-        sites = get_sites(use_athena=True)
+        sites = get_sites()
 
-        assert len(sites) == 135  # Got fallback data
         mock_load.assert_called_once()
+        assert len(sites) == 1
 
 
 class TestLoadSitesFromAthena:

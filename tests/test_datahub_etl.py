@@ -8,7 +8,8 @@ from datahub_etl.weather_etl import (
     transform_observations_data,
     transform_observation,
     load_geohash_cache,
-    save_geohash_cache
+    save_geohash_cache,
+    _build_site_priority_queue
 )
 from tests.fixtures import (
     NEAREST_STATION_RESPONSE,
@@ -98,9 +99,9 @@ class TestDataTransformation:
 
         result = transform_observation(obs)
 
-        assert result["wind_direction"] == ""
-        assert result["temperature"] == ""
-        assert result["pressure"] == ""
+        assert result["wind_direction"] is None
+        assert result["temperature"] is None
+        assert result["pressure"] is None
 
 
 class TestExtractObservations:
@@ -114,7 +115,7 @@ class TestExtractObservations:
         try:
             with patch('datahub_etl.weather_etl.load_geohash_cache') as mock_load:
                 with patch('datahub_etl.weather_etl.save_geohash_cache'):
-                    mock_load.return_value = {"3005": "gfxnj5"}
+                    mock_load.return_value = {"3005": {"geohash": "gfxnj5", "last_fetched": "2026-01-01T00:00:00Z"}}
                     extract_observations_data(output_file, mock_client)
 
             mock_client.get_nearest_station.assert_not_called()
@@ -152,7 +153,9 @@ class TestExtractObservations:
             mock_client.get_nearest_station.assert_called_once_with(60.139, -1.183)
             mock_client.get_observations.assert_called_once_with("gfxnj5")
 
-            assert saved_cache == {"3005": "gfxnj5"}
+            assert "3005" in saved_cache
+            assert saved_cache["3005"]["geohash"] == "gfxnj5"
+            assert "last_fetched" in saved_cache["3005"]
         finally:
             if os.path.exists(output_file):
                 os.unlink(output_file)
@@ -211,5 +214,104 @@ class TestTransformObservationsData:
         finally:
             if os.path.exists(input_file):
                 os.unlink(input_file)
+            if os.path.exists(output_file):
+                os.unlink(output_file)
+
+
+class TestBatchPrioritization:
+    def test_build_priority_queue_sorts_by_timestamp(self):
+        """Sites should be sorted by last_fetched timestamp, oldest first"""
+        sites = [
+            {"site_id": "3005", "site_name": "Site A"},
+            {"site_id": "3017", "site_name": "Site B"},
+            {"site_id": "3026", "site_name": "Site C"}
+        ]
+
+        cache = {
+            "3005": {"geohash": "abc", "last_fetched": "2026-02-13T10:00:00Z"},
+            "3017": {"geohash": "def", "last_fetched": "2026-02-12T10:00:00Z"},  # Oldest
+            "3026": {"geohash": "ghi", "last_fetched": "2026-02-13T15:00:00Z"}
+        }
+
+        queue = _build_site_priority_queue(sites, cache)
+
+        assert len(queue) == 3
+        assert queue[0][0]["site_id"] == "3017"  # Oldest timestamp
+        assert queue[1][0]["site_id"] == "3005"
+        assert queue[2][0]["site_id"] == "3026"  # Newest timestamp
+
+    def test_build_priority_queue_prioritizes_never_fetched(self):
+        """Sites never fetched should get 1970 timestamp and be processed first"""
+        sites = [
+            {"site_id": "3005", "site_name": "Site A"},
+            {"site_id": "3017", "site_name": "Site B"},
+            {"site_id": "3026", "site_name": "Site C"}
+        ]
+
+        cache = {
+            "3005": {"geohash": "abc", "last_fetched": "2026-02-13T10:00:00Z"},
+            # 3017 not in cache - should be first
+            "3026": {"geohash": "ghi", "last_fetched": "2026-02-12T10:00:00Z"}
+        }
+
+        queue = _build_site_priority_queue(sites, cache)
+
+        assert queue[0][0]["site_id"] == "3017"  # Never fetched
+        assert queue[0][1] == "1970-01-01T00:00:00Z"  # Default timestamp
+
+    def test_build_priority_queue_handles_none_last_fetched(self):
+        """Sites with None last_fetched should get 1970 timestamp"""
+        sites = [
+            {"site_id": "3005", "site_name": "Site A"},
+            {"site_id": "3017", "site_name": "Site B"}
+        ]
+
+        cache = {
+            "3005": {"geohash": "abc", "last_fetched": None},
+            "3017": {"geohash": "def", "last_fetched": "2026-02-13T10:00:00Z"}
+        }
+
+        queue = _build_site_priority_queue(sites, cache)
+
+        assert queue[0][0]["site_id"] == "3005"
+        assert queue[0][1] == "1970-01-01T00:00:00Z"
+        assert queue[1][0]["site_id"] == "3017"
+
+    @patch('datahub_etl.weather_etl.get_sites')
+    def test_batching_respects_priority_order(self, mock_get_sites):
+        """When batch_size < total sites, oldest sites should be processed first"""
+        sites = [
+            {"site_id": "3005", "site_name": "Site A", "lat": 60.0, "lon": -1.0},
+            {"site_id": "3017", "site_name": "Site B", "lat": 61.0, "lon": -2.0},
+            {"site_id": "3026", "site_name": "Site C", "lat": 62.0, "lon": -3.0}
+        ]
+        mock_get_sites.return_value = sites
+
+        cache = {
+            "3005": {"geohash": "abc", "last_fetched": "2026-02-13T10:00:00Z"},
+            "3017": {"geohash": "def", "last_fetched": "2026-02-12T10:00:00Z"},  # Oldest
+            "3026": {"geohash": "ghi", "last_fetched": "2026-02-13T15:00:00Z"}
+        }
+
+        mock_client = Mock()
+        mock_client.get_observations.return_value = [
+            {"datetime": "2026-02-13T12:00:00Z", "temperature": "10"}
+        ]
+
+        output_file = tempfile.mktemp(suffix='.json')
+
+        try:
+            with patch('datahub_etl.weather_etl.load_geohash_cache') as mock_load:
+                with patch('datahub_etl.weather_etl.save_geohash_cache'):
+                    mock_load.return_value = cache
+                    extract_observations_data(output_file, mock_client, batch_size=2)
+
+            # Should process 3017 first (oldest), then 3005
+            # 3026 should not be processed (batch_size=2)
+            calls = mock_client.get_observations.call_args_list
+            assert len(calls) == 2
+            assert calls[0][0][0] == "def"  # 3017's geohash
+            assert calls[1][0][0] == "abc"  # 3005's geohash
+        finally:
             if os.path.exists(output_file):
                 os.unlink(output_file)
