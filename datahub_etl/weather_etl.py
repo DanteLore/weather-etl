@@ -40,6 +40,71 @@ def save_geohash_cache(cache, cache_file=CACHE_FILE, s3_bucket=None, s3_key=None
             print(f"Could not save cache to S3: {e}")
 
 
+def _normalize_cache_entry(cache_entry):
+    if isinstance(cache_entry, str):
+        return {"geohash": cache_entry, "last_fetched": None}
+    return cache_entry
+
+
+def _build_site_priority_queue(all_sites, geohash_cache):
+    sites_with_priority = []
+    for site in all_sites:
+        cache_entry = _normalize_cache_entry(geohash_cache.get(site["site_id"], {}))
+        last_fetched = cache_entry.get("last_fetched") or "1970-01-01T00:00:00Z"
+        sites_with_priority.append((site, last_fetched))
+
+    sites_with_priority.sort(key=lambda x: x[1])
+    return sites_with_priority
+
+
+def _fetch_geohash_for_site(site, client, geohash_cache):
+    cache_entry = geohash_cache.get(site["site_id"], {})
+    geohash = cache_entry.get("geohash") if isinstance(cache_entry, dict) else cache_entry
+
+    if geohash:
+        return geohash
+
+    station = client.get_nearest_station(site["lat"], site["lon"])
+    if not station:
+        return None
+
+    geohash = station[0]["geohash"]
+    print(f"  Cached geohash for {site['site_name']}: {geohash}")
+    return geohash
+
+
+def _fetch_observations_for_site(site, client, geohash_cache):
+    geohash = _fetch_geohash_for_site(site, client, geohash_cache)
+    if not geohash:
+        print(f"No station found for {site['site_name']}")
+        return None, None
+
+    observations = client.get_observations(geohash)
+    if not observations:
+        print(f"No observations for {site['site_name']}")
+        return None, None
+
+    for obs in observations:
+        obs["_site_metadata"] = site
+        obs["_geohash"] = geohash
+
+    print(f"  {site['site_name']}: {len(observations)} observations")
+    return observations, geohash
+
+
+def _update_cache_for_site(site_id, geohash, geohash_cache):
+    geohash_cache[site_id] = {
+        "geohash": geohash,
+        "last_fetched": datetime.now(timezone.utc).isoformat()
+    }
+
+
+def _write_observations_to_file(observations, filename):
+    with open(filename, 'w') as f:
+        json.dump(observations, f, ensure_ascii=False, indent=2)
+    print(f"Wrote {len(observations)} observations to {filename}")
+
+
 def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=None):
     geohash_cache = load_geohash_cache(s3_bucket=s3_bucket, s3_key=s3_cache_key)
     cache_updated = False
@@ -49,60 +114,27 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
     all_sites = get_sites()
     batch_size = max(1, len(all_sites) // 24)
 
-    sites_with_priority = []
-    for site in all_sites:
-        site_id = site["site_id"]
-        cache_entry = geohash_cache.get(site_id, {})
-
-        if isinstance(cache_entry, str):
-            cache_entry = {"geohash": cache_entry, "last_fetched": None}
-            geohash_cache[site_id] = cache_entry
+    for site_id in geohash_cache:
+        normalized = _normalize_cache_entry(geohash_cache[site_id])
+        if normalized != geohash_cache[site_id]:
+            geohash_cache[site_id] = normalized
             cache_updated = True
 
-        last_fetched = cache_entry.get("last_fetched")
-        sites_with_priority.append((site, last_fetched or "1970-01-01T00:00:00Z"))
-
-    sites_with_priority.sort(key=lambda x: x[1])
+    sites_with_priority = _build_site_priority_queue(all_sites, geohash_cache)
     sites_to_fetch = [site for site, _ in sites_with_priority[:batch_size]]
 
     print(f"Processing batch of {len(sites_to_fetch)} sites (out of {len(all_sites)} total, batch_size={batch_size})")
 
     for site in sites_to_fetch:
-        site_id = site["site_id"]
-
         try:
-            cache_entry = geohash_cache.get(site_id, {})
-            geohash = cache_entry.get("geohash") if isinstance(cache_entry, dict) else cache_entry
+            observations, geohash = _fetch_observations_for_site(site, client, geohash_cache)
 
-            if not geohash:
-                station = client.get_nearest_station(site["lat"], site["lon"])
-                if not station:
-                    print(f"No station found for {site['site_name']}")
-                    failed_sites.append(site["site_name"])
-                    continue
-
-                geohash = station[0]["geohash"]
-                print(f"  Cached geohash for {site['site_name']}: {geohash}")
-
-            observations = client.get_observations(geohash)
-
-            if not observations:
-                print(f"No observations for {site['site_name']}")
+            if observations and geohash:
+                all_observations.extend(observations)
+                _update_cache_for_site(site["site_id"], geohash, geohash_cache)
+                cache_updated = True
+            else:
                 failed_sites.append(site["site_name"])
-                continue
-
-            for obs in observations:
-                obs["_site_metadata"] = site
-                obs["_geohash"] = geohash
-                all_observations.append(obs)
-
-            geohash_cache[site_id] = {
-                "geohash": geohash,
-                "last_fetched": datetime.now(timezone.utc).isoformat()
-            }
-            cache_updated = True
-
-            print(f"  {site['site_name']}: {len(observations)} observations")
 
         except Exception as e:
             print(f"Failed to fetch {site['site_name']}: {e}")
@@ -114,10 +146,7 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
     if failed_sites:
         print(f"\nFailed to fetch {len(failed_sites)} sites")
 
-    with open(filename, 'w') as f:
-        json.dump(all_observations, f, ensure_ascii=False, indent=2)
-
-    print(f"Wrote {len(all_observations)} observations to {filename}")
+    _write_observations_to_file(all_observations, filename)
     return len(all_observations) > 0
 
 
@@ -141,6 +170,11 @@ def transform_observations_data(input_filename, output_filename):
     return True
 
 
+def _get_numeric_field(obs, field_name):
+    value = obs.get(field_name)
+    return None if value in ("", None) else value
+
+
 def transform_observation(obs):
     site = obs.get("_site_metadata")
     if not site:
@@ -155,13 +189,13 @@ def transform_observation(obs):
         "site_elevation": float(site["site_elevation"]),
         "lat": float(site["lat"]),
         "lon": float(site["lon"]),
-        "wind_direction": obs.get("wind_direction", ""),
-        "wind_gust": obs.get("wind_gust", ""),
-        "screen_relative_humidity": obs.get("humidity", ""),
-        "pressure": obs.get("mslp", ""),
-        "wind_speed": obs.get("wind_speed", ""),
-        "temperature": obs.get("temperature", ""),
-        "visibility": obs.get("visibility", ""),
+        "wind_direction": _get_numeric_field(obs, "wind_direction"),
+        "wind_gust": _get_numeric_field(obs, "wind_gust"),
+        "screen_relative_humidity": _get_numeric_field(obs, "humidity"),
+        "pressure": _get_numeric_field(obs, "mslp"),
+        "wind_speed": _get_numeric_field(obs, "wind_speed"),
+        "temperature": _get_numeric_field(obs, "temperature"),
+        "visibility": _get_numeric_field(obs, "visibility"),
         "weather_type": obs.get("weather_code", ""),
-        "pressure_tendency": obs.get("pressure_tendency", ""),
+        "pressure_tendency": _get_numeric_field(obs, "pressure_tendency"),
     }
