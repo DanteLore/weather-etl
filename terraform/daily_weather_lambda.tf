@@ -22,13 +22,13 @@ resource "aws_lambda_function" "datapoint_etl_lambda_function" {
   filename         = "weather_etl.zip"
   function_name    = var.datapoint_etl_function_name
   source_code_hash = filebase64sha256("weather_etl.zip")
-  timeout          = 60
+  timeout          = 300
 }
 
 resource "aws_cloudwatch_event_rule" "time_to_load_weather_data" {
   name                = var.datapoint_etl_cloudwatch_event
-  description         = "Grab the data just before midnight"
-  schedule_expression = "cron(50 23 * * ? *)"
+  description         = "Fetch weather data hourly in batches"
+  schedule_expression = "rate(1 hour)"
 }
 
 resource "aws_cloudwatch_event_target" "load_data_at_half_past_midnight" {

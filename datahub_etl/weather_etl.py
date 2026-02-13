@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 from site_loader import get_sites
 
 CACHE_FILE = "/tmp/geohash_cache.json"
@@ -45,16 +46,35 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
     all_observations = []
     failed_sites = []
 
-    sites = get_sites()
-    print(f"Fetching observations for {len(sites)} sites")
+    all_sites = get_sites()
+    batch_size = max(1, len(all_sites) // 24)
 
-    for site in sites:
+    sites_with_priority = []
+    for site in all_sites:
+        site_id = site["site_id"]
+        cache_entry = geohash_cache.get(site_id, {})
+
+        if isinstance(cache_entry, str):
+            cache_entry = {"geohash": cache_entry, "last_fetched": None}
+            geohash_cache[site_id] = cache_entry
+            cache_updated = True
+
+        last_fetched = cache_entry.get("last_fetched")
+        sites_with_priority.append((site, last_fetched or "1970-01-01T00:00:00Z"))
+
+    sites_with_priority.sort(key=lambda x: x[1])
+    sites_to_fetch = [site for site, _ in sites_with_priority[:batch_size]]
+
+    print(f"Processing batch of {len(sites_to_fetch)} sites (out of {len(all_sites)} total, batch_size={batch_size})")
+
+    for site in sites_to_fetch:
         site_id = site["site_id"]
 
         try:
-            if site_id in geohash_cache:
-                geohash = geohash_cache[site_id]
-            else:
+            cache_entry = geohash_cache.get(site_id, {})
+            geohash = cache_entry.get("geohash") if isinstance(cache_entry, dict) else cache_entry
+
+            if not geohash:
                 station = client.get_nearest_station(site["lat"], site["lon"])
                 if not station:
                     print(f"No station found for {site['site_name']}")
@@ -62,8 +82,6 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
                     continue
 
                 geohash = station[0]["geohash"]
-                geohash_cache[site_id] = geohash
-                cache_updated = True
                 print(f"  Cached geohash for {site['site_name']}: {geohash}")
 
             observations = client.get_observations(geohash)
@@ -77,6 +95,12 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
                 obs["_site_metadata"] = site
                 obs["_geohash"] = geohash
                 all_observations.append(obs)
+
+            geohash_cache[site_id] = {
+                "geohash": geohash,
+                "last_fetched": datetime.now(timezone.utc).isoformat()
+            }
+            cache_updated = True
 
             print(f"  {site['site_name']}: {len(observations)} observations")
 

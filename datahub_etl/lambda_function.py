@@ -8,7 +8,7 @@ INPUT_FILE = "/tmp/weather_data.json"
 OUTPUT_FILE = "/tmp/observations.json"
 S3_INCOMING_BUCKET = "dantelore.data.incoming"
 S3_RAW_BUCKET = "dantelore.data.raw"
-S3_CACHE_KEY = "weather/geohash_cache.json"
+S3_CACHE_KEY = "weather_cache/geohash_cache.json"
 ATHENA_DATABASE = "incoming"
 ATHENA_TABLE = "weather"
 ATHENA_RESULTS_BUCKET = "dantelore.queryresults"
@@ -18,7 +18,12 @@ def handler(event, context):
     today = datetime.today()
     client = DataHubClient(API_KEY)
 
-    extract_observations_data(INPUT_FILE, client, s3_bucket=S3_RAW_BUCKET, s3_cache_key=S3_CACHE_KEY)
+    has_data = extract_observations_data(INPUT_FILE, client, s3_bucket=S3_RAW_BUCKET, s3_cache_key=S3_CACHE_KEY)
+
+    if not has_data:
+        print("No observations extracted. Skipping transform and upload.")
+        return {"statusCode": 200, "message": "No data extracted"}
+
     save_raw_data_to_s3(today)
 
     try:
@@ -32,6 +37,8 @@ def handler(event, context):
 
     load_file_to_s3(OUTPUT_FILE, S3_INCOMING_BUCKET, s3_key)
     add_glue_partition_for(today.year, today.month, today.day, ATHENA_TABLE, ATHENA_DATABASE, ATHENA_RESULTS_BUCKET)
+
+    return {"statusCode": 200, "message": "Success"}
 
 
 def save_raw_data_to_s3(today):
