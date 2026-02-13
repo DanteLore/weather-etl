@@ -48,7 +48,7 @@ from
         month(observation_ts) as obs_month,
         year(observation_ts) as obs_year,
         ROW_NUMBER() OVER ( PARTITION BY date_trunc('hour', observation_ts), site_id ORDER BY observation_ts DESC ) as rn
-    from weather
+    from incoming.weather
     where (year <> '2022' and month <> '7' and site_name <> 'CHIVENOR' or temperature > -5) -- exclude broken readings from Chivenor
 )
 where rn = 1
@@ -85,16 +85,17 @@ group by site_id, site_name, lat, lon, YEAR(observation_ts), MONTH(observation_t
 def build_data_models(data_lake_bucket):
     # Create the core model
     delete_folder_from_s3(data_lake_bucket, WEATHER_DIR_NAME)
-    execute_athena_command(sql=WEATHER_TABLE_SQL, wait_seconds=120)
+    execute_athena_command(WEATHER_TABLE_SQL, "lake", "dantelore.queryresults", wait_seconds=120)
 
     # Create the summary table
     delete_folder_from_s3(data_lake_bucket, SUMMARY_DIR_NAME)
-    execute_athena_command(sql=SUMMARY_TABLE_SQL, wait_seconds=120)
+    execute_athena_command(SUMMARY_TABLE_SQL, "lake", "dantelore.queryresults", wait_seconds=120)
 
 
 def handler(event, context):
     try:
         build_data_models(S3_DATA_LAKE_BUCKET)
+        return {"statusCode": 200, "message": "Success"}
     except Exception as e:
         print("Failed to transform data")
         print(e)

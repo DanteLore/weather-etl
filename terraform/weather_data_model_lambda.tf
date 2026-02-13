@@ -122,7 +122,8 @@ resource "aws_iam_policy" "weather_data_model_lambda_policy" {
         "s3:DeleteObject"
       ],
       "Resource": [
-          "arn:aws:s3:::dantelore.data.lake/weather/*"
+          "arn:aws:s3:::dantelore.data.lake/weather/*",
+          "arn:aws:s3:::dantelore.data.lake/weather_monthly_site_summary/*"
       ],
       "Effect": "Allow",
       "Sid": ""
