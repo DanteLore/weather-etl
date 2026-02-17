@@ -52,7 +52,7 @@ EXPECTED_TRANSFORMED_ROW = {
     "lat": 60.139,
     "lon": -1.183,
     "wind_direction": "SW",
-    "wind_gust": "25",
+    "wind_gust": None,
     "screen_relative_humidity": "85",
     "pressure": "1013",
     "wind_speed": "18",
@@ -60,4 +60,5 @@ EXPECTED_TRANSFORMED_ROW = {
     "visibility": "15000",
     "weather_type": "7",
     "pressure_tendency": "F",
+    "dew_point": None,
 }

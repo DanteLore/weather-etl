@@ -6,7 +6,8 @@ resource "aws_glue_catalog_table" "incoming_weather_glue_table" {
   table_type = "EXTERNAL_TABLE"
 
   parameters = {
-    EXTERNAL = "TRUE"
+    EXTERNAL                    = "TRUE"
+    "use.null.for.invalid.data" = "true"
   }
 
   storage_descriptor {
