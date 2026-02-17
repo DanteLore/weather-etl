@@ -4,13 +4,7 @@ pytest tests/ || exit 1
 echo "Building the Weather ETL"
 mkdir build || exit
 
-cp datahub_etl/lambda_function.py build
-cp datahub_etl/weather_etl.py build
-cp datahub_etl/api_key.py build
-cp datahub_etl/datahub_client.py build
-cp datahub_etl/site_loader.py build
-cp datahub_etl/sites.json build
-cp datahub_etl/geohash_cache.json build
+cp -Rf datahub_etl build
 cp -Rf helpers build
 
 (

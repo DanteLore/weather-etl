@@ -3,7 +3,7 @@ variable "datapoint_etl_function_name" {
 }
 
 variable "datapoint_etl_handler" {
-  default = "lambda_function.handler"
+  default = "datahub_etl.lambda_function.handler"
 }
 
 variable "datapoint_etl_cloudwatch_event" {

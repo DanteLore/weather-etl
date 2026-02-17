@@ -1,8 +1,8 @@
 from helpers.aws import load_file_to_s3, add_glue_partition_for
 from datetime import datetime
-from weather_etl import extract_observations_data, transform_observations_data
-from datahub_client import DataHubClient
-from api_key import API_KEY
+from .weather_etl import extract_observations_data, transform_observations_data
+from .datahub_client import DataHubClient
+from .api_key import API_KEY
 
 INPUT_FILE = "/tmp/weather_data.json"
 OUTPUT_FILE = "/tmp/observations.json"
@@ -33,7 +33,8 @@ def handler(event, context):
         print(e)
         return {"statusCode": 500}
 
-    s3_key = f"weather/year={today.year}/month={today.month}/day={today.day}/observations.json"
+    hour_prefix = today.strftime("%Y-%m-%d-%H")
+    s3_key = f"weather/year={today.year}/month={today.month}/day={today.day}/observations-{hour_prefix}.json"
 
     load_file_to_s3(OUTPUT_FILE, S3_INCOMING_BUCKET, s3_key)
     add_glue_partition_for(today.year, today.month, today.day, ATHENA_TABLE, ATHENA_DATABASE, ATHENA_RESULTS_BUCKET)
@@ -42,6 +43,7 @@ def handler(event, context):
 
 
 def save_raw_data_to_s3(today):
-    raw_s3_key = f"weather/{today.year}/{today.month}/{today.day}/raw.json"
+    hour_prefix = today.strftime("%Y-%m-%d-%H")
+    raw_s3_key = f"weather/{today.year}/{today.month}/{today.day}/raw-{hour_prefix}.json"
     print(f"Writing raw data to: s3://{S3_RAW_BUCKET}/{raw_s3_key}")
     load_file_to_s3(INPUT_FILE, S3_RAW_BUCKET, raw_s3_key)

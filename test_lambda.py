@@ -1,18 +1,19 @@
-import boto3
+import sys
 import json
+import boto3
 from datetime import datetime
+import time
 
-FUNCTION_NAME = "model_weather_data"
 
+def invoke_lambda(function_name):
+    lambda_client = boto3.client('lambda')
 
-def invoke_lambda():
-    print(f"Invoking Lambda function: {FUNCTION_NAME}")
+    print(f"Invoking Lambda function: {function_name}")
     print(f"Time: {datetime.now()}\n")
 
     try:
-        lambda_client = boto3.client('lambda')
         response = lambda_client.invoke(
-            FunctionName=FUNCTION_NAME,
+            FunctionName=function_name,
             InvocationType='RequestResponse',
             LogType='Tail'
         )
@@ -42,43 +43,51 @@ def invoke_lambda():
         return False
 
 
-def get_recent_logs(minutes=5):
+def get_recent_logs(function_name, minutes=5):
     logs_client = boto3.client('logs')
-    log_group = f"/aws/lambda/{FUNCTION_NAME}"
+    log_group = f"/aws/lambda/{function_name}"
 
     print(f"\nFetching recent logs from: {log_group}")
 
-    import time
-    end_time = int(time.time() * 1000)
-    start_time = end_time - (minutes * 60 * 1000)
-
     try:
+        end_time = int(time.time() * 1000)
+        start_time = end_time - (minutes * 60 * 1000)
+
         response = logs_client.filter_log_events(
             logGroupName=log_group,
             startTime=start_time,
-            endTime=end_time
+            endTime=end_time,
+            limit=100
         )
 
-        events = response.get('events', [])
-        if events:
-            print(f"\nRecent logs (last {minutes} minutes):")
+        if response['events']:
+            print(f"\nRecent log events (last {minutes} minutes):")
             print('='*60)
-            for event in events:
+            for event in response['events']:
                 timestamp = datetime.fromtimestamp(event['timestamp'] / 1000)
-                print(f"{timestamp}: {event['message']}")
+                print(f"[{timestamp}] {event['message']}")
         else:
-            print(f"No logs found in the last {minutes} minutes")
+            print(f"No log events found in the last {minutes} minutes")
 
     except Exception as e:
         print(f"Error fetching logs: {e}")
 
 
 if __name__ == "__main__":
-    success = invoke_lambda()
+    if len(sys.argv) != 2:
+        print("Usage: python test_lambda.py <function_name>")
+        print("\nAvailable functions:")
+        print("  - load_weather_data")
+        print("  - model_weather_data")
+        sys.exit(1)
+
+    function_name = sys.argv[1]
+    success = invoke_lambda(function_name)
 
     if not success:
         print("\n" + "="*60)
-        get_recent_logs(minutes=10)
+        get_recent_logs(function_name, minutes=10)
 
     print("\n" + "="*60)
     print(f"Test {'[SUCCESS] PASSED' if success else '[ERROR] FAILED'}")
+    sys.exit(0 if success else 1)

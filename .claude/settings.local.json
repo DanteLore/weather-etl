@@ -6,7 +6,9 @@
       "Bash(pytest:*)",
       "WebFetch(domain:dantelore.com)",
       "Bash(powershell.exe:*)",
-      "WebFetch(domain:datahub.metoffice.gov.uk)"
+      "WebFetch(domain:datahub.metoffice.gov.uk)",
+      "Bash(python update_notebook.py:*)",
+      "Bash(python update_quality_notebook.py:*)"
     ]
   }
 }
