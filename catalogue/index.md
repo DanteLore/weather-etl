@@ -2,12 +2,20 @@
 
 One line per dataset. For full details, follow the link.
 
-## weather-etl
+## weather-etl / incoming (raw)
 
 | Dataset | Description |
 |---|---|
-| [datapoint_etl](weather-etl/datapoint_etl.md) | Hourly weather observations from UK and global Met Office stations, via the Met Office DataHub API |
-| [ceda_midas](weather-etl/ceda_midas.md) | Historic quality-controlled UK hourly weather observations from the CEDA MIDAS Open archive (202107 snapshot) |
+| [incoming.weather](weather-etl/incoming/weather.md) | Raw hourly Met Office observations as received from the DataHub API, written every hour |
+| [incoming.midas](weather-etl/incoming/midas.md) | Raw historic CEDA MIDAS Open observations (202107 snapshot, one-off load) |
+
+## weather-etl / lake (modelled)
+
+| Dataset | Description |
+|---|---|
+| [lake.weather](weather-etl/lake/weather.md) | Deduplicated, cleaned hourly Met Office observations — the main analysis table, rebuilt nightly |
+| [lake.weather_stations](weather-etl/lake/weather_stations.md) | Metadata for the 137 UK/Ireland Met Office monitoring stations |
+| [lake.weather_monthly_site_summary](weather-etl/lake/weather_monthly_site_summary.md) | Percentile-based monthly temperature summary by station, rebuilt nightly |
 
 ## gov-etl
 
