@@ -41,3 +41,5 @@ Coordinate columns are `x_coordinate` (easting) and `y_coordinate` (northing) in
 | [nomis_census_occupation](nomis_census_occupation.md) | `incoming.nomis_census_occupation` | Census 2021 employment by occupation group, all wards in England & Wales |
 | [os_terrain_50](os_terrain_50.md) | `incoming.os_terrain_50_terrain50` | 50m DTM elevation for all of GB (~114M points) |
 | [ea_lidar_1m](ea_lidar_1m.md) | `incoming.ea_lidar_1m_dtm` | 1m DTM elevation for England (selected areas — currently West Berkshire) |
+| [exchange_rates](exchange_rates.md) | `incoming.exchange_rates_frankfurter` | Daily ECB reference rates for 46 currencies vs EUR, 1999–present |
+| [world_bank_gdp](world_bank_gdp.md) | `incoming.world_bank_gdp` | World Bank GDP indicators for all countries, 1960 onwards |

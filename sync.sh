@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# catalogue-sync.sh — copy this into any project that imports the catalogue via git subtree.
+# catalogue/sync.sh — run this from any project that imports the catalogue via git subtree.
 #
 # Usage:
-#   ./scripts/catalogue-sync.sh pull    # pull latest from catalogue repo
-#   ./scripts/catalogue-sync.sh push    # push your local catalogue edits back
+#   catalogue/sync.sh pull    # pull latest from catalogue repo
+#   catalogue/sync.sh push    # push your local catalogue edits back
 #
 # One-off setup (run once per project, not needed again):
-#   git remote add catalogue git@github.com:dantelore/data-catalogue.git
+#   git remote add catalogue git@github.com:DanteLore/data-catalogue.git
 #   git subtree add --prefix=catalogue catalogue main --squash
 
 set -euo pipefail

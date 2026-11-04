@@ -2,7 +2,7 @@
 
 This catalogue is a folder of markdown files in a git repo. Each file describes one dataset. There's no database, no UI, no search index and no approval process: you write a file, you commit it, you're done.
 
-This README covers the conventions for using and contributing to it. For the reasoning behind these choices, see [docs/philosophy.md](docs/philosophy.md).
+This README covers the conventions for using and contributing to it.
 
 ## How it works
 
@@ -39,17 +39,15 @@ Update the index whenever you add or remove a file.
 3. Add a line to `index.md`.
 4. Commit it.
 
-That's the whole process. No review, approval or ticket is required. Working alone, commit directly. On a team, a pull request with no mandatory reviewer is fine - nothing should block a file from being committed except the author's own judgement.
+That's the whole process. No review, approval or ticket is required. Working alone, commit directly. On a team, follow whatever process you would normally follow (pull request, merge request, whatever).  The only things that really matter are A: that you use the same workflow for code and docs and B: that you prioritise simplicity across the process.
 
 ### Updating an entry
 
-Same as writing a new one: edit the file, commit it. Git history is your changelog and audit trail - there's no version field or changelog section inside the file. To see when a field changed or who wrote what, use `git log` or `git blame`. Note that 
-you are absolutely free to impose whatever process you like over the git process here - CI/CD scripts, pull/merge requests and
-so on.  Git is used specifically to support flexibility.
+Same as writing a new one: edit the file, commit it. Git history is your changelog and audit trail - there's no version field or changelog section inside the file because Git gave us all that for free. To see when a field changed or who wrote what, use `git log` or `git blame`. Note that you are absolutely free to impose whatever process you like over the git process here - CI/CD scripts, pull/merge requests and so on.  Git is used specifically to support flexibility.
 
-### Keeping it honest
+### Be honest
 
-Fill in **Known issues & caveats** properly. Write down the duplicates, the missing fields, the odd date format, anything you have to work around to use the data. If there's genuinely nothing to report, write "None known" rather than leaving it blank. This is the most valuable section in any entry and the one most often skipped.
+Fill in **Known issues & caveats** properly. Write down the duplicates, the missing fields, the odd date format, anything you have to work around to use the data. If there's genuinely nothing to report, write "None known" rather than leaving it blank. This is the most valuable section in any entry and the one most often skipped. You'll thank yourself when you come back in a few months time!
 
 ### Coverage over completeness
 
@@ -83,7 +81,7 @@ The catalogue is a standalone git repo. Other projects bring it in as a subdirec
 
 The recommended mechanism for both is **`git subtree`**, not `git submodule`. A subtree copies the catalogue's files directly into your repo, so they behave like ordinary files: anyone who clones your project gets them automatically, with no extra init step, no detached-HEAD surprises, and nothing for CI to forget. Submodules are the more "correct" tool for a pinned external dependency, but they add a setup step that gets skipped and a failure mode that breaks builds, which is exactly the kind of friction this whole project exists to avoid. Use a submodule only if you have a specific reason to pin and isolate the catalogue rather than vendor it.
 
-A consumer that doesn't want the catalogue resident in its codebase at all can skip this entirely and just link to the catalogue repo from its own README, or point an AI agent at the catalogue repo URL when someone needs to find a dataset. That's a perfectly valid fourth option.
+A consumer that doesn't want the catalogue resident in its codebase at all can skip this entirely and just link to the catalogue repo from its own README.
 
 ### Who owns what?
 
@@ -107,16 +105,11 @@ git subtree add --prefix=catalogue catalogue main --squash
 
 You now have a `catalogue/` directory in your ETL repo. Edit the entries for the datasets this project produces right there, alongside the ETL code, and commit them as part of your normal work.
 
-To push your catalogue edits back so the rest of the world sees them:
+Use the included script to push and pull:
 
 ```bash
-git subtree push --prefix=catalogue catalogue main
-```
-
-To pull down changes other people have made to the catalogue (for example, an entry your project doesn't own but references):
-
-```bash
-git subtree pull --prefix=catalogue catalogue main --squash
+catalogue/sync.sh push   # push your catalogue edits back so the rest of the world sees them
+catalogue/sync.sh pull   # pull down changes others have made to the catalogue
 ```
 
 ### Consumer (product) project: read-mostly subtree
@@ -128,20 +121,24 @@ git remote add catalogue git@github.com:your-org/data-catalogue.git
 git subtree add --prefix=catalogue catalogue main --squash
 ```
 
-The difference is intent, not mechanics. You'll mostly run pull to keep the docs current:
+The difference is intent, not mechanics. Mostly just run pull to keep the docs current:
 
 ```bash
-git subtree pull --prefix=catalogue catalogue main --squash
+catalogue/sync.sh pull
 ```
 
-If you do fix something - a wrong caveat, an outdated owner - you *can* push it back with the same `git subtree push` command above. Out of courtesy you should probably keep the dataset owner updated too!
+If you do fix something - a wrong caveat, an outdated owner - you can push it back too:
+
+```bash
+catalogue/sync.sh push
+```
 
 ### Conventions to keep subtree painless
 
 Subtree's one real sharp edge is that the commands are long and must be *exactly consistent* every time - the same `--prefix`, and `--squash` on every `add` and `pull`. Get this wrong and the history gets confusing. Two conventions remove the problem:
 
 - **Always use the same prefix** (`catalogue/` is the suggested default) and **always pass `--squash`** on `add` and `pull`. Never on `push`.
-- **Wrap the commands in a script** so nobody has to remember them. A `sync.sh` in each project that runs the right pull/push command is enough, and it documents the exact prefix and remote in one place. See `sync.sh` in this repo for a template.
+- **Use `catalogue/sync.sh`** rather than typing the commands by hand. It has the correct prefix, remote and flags baked in.
 
 ### Why not just copy the files in?
 
