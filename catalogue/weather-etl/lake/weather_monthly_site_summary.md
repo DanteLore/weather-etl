@@ -12,7 +12,7 @@ Public. Derived from Met Office public data; no personal data.
 
 ## Owner
 
-Dan (logicalgenetics@gmail.com). See the [weather-etl repo](https://github.com/dantelore/weather-etl) for the code.
+Dan. See the [weather-etl repo](https://github.com/dantelore/weather-etl) for the code.
 
 ## Source & references
 

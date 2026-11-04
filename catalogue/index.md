@@ -17,6 +17,38 @@ One line per dataset. For full details, follow the link.
 | [lake.weather_stations](weather-etl/lake/weather_stations.md) | Metadata for the 137 UK/Ireland Met Office monitoring stations |
 | [lake.weather_monthly_site_summary](weather-etl/lake/weather_monthly_site_summary.md) | Percentile-based monthly temperature summary by station, rebuilt nightly |
 
+## energy-etl
+
+| Dataset | Description |
+|---|---|
+| [carbon_intensity_national](energy-etl/carbon_intensity_national.md) | National UK carbon intensity — forecast, actual and index, half-hourly |
+| [carbon_intensity_regional](energy-etl/carbon_intensity_regional.md) | Per-DNO-region carbon intensity and generation mix, half-hourly |
+| [carbon_intensity_generation](energy-etl/carbon_intensity_generation.md) | National fuel-type generation share (%) per half-hour from the Carbon Intensity API |
+| [elexon_system_prices](energy-etl/elexon_system_prices.md) | Elexon System Buy/Sell Prices and imbalance volume per settlement period |
+| [elexon_market_index](energy-etl/elexon_market_index.md) | Wholesale electricity prices (MID) from N2EX and APX per settlement period |
+| [elexon_fuelhh](energy-etl/elexon_fuelhh.md) | Half-hourly generation by fuel type in MW — the most granular generation mix data |
+| [elexon_bod](energy-etl/elexon_bod.md) | Balancing Mechanism bid and offer prices/levels per BM unit per settlement period |
+| [elexon_boalf](energy-etl/elexon_boalf.md) | Accepted balancing instructions (BOA Level File) per BM unit |
+| [elexon_pn](energy-etl/elexon_pn.md) | Physical Notifications — BM unit planned output profiles before gate closure |
+| [elexon_netbsad](energy-etl/elexon_netbsad.md) | Net Balancing Services Adjustment Data — price adjustments per settlement period |
+| [remit](energy-etl/remit.md) | REMIT outage notifications for UK generation and transmission assets (versioned) |
+| [repd](energy-etl/repd.md) | Renewable Energy Planning Database — all UK renewable/low-carbon projects and their status |
+| [natgas_sap](energy-etl/natgas_sap.md) | National Gas System Average Price (p/kWh) by gas day |
+| [eia_brent_crude](energy-etl/eia_brent_crude.md) | Europe Brent crude oil daily spot price (USD/barrel), weekdays only |
+
+## analytics-etl
+
+| Dataset | Description |
+|---|---|
+| [incoming.webanalytics](analytics-etl/incoming/webanalytics.md) | Raw CloudFront access logs for dantelore.com — one row per HTTP request, tab-delimited, partitioned by year/month/day |
+| [lake.webanalytics](analytics-etl/lake/webanalytics.md) | Enriched web analytics with geolocation, user-agent parsing, bot detection and content flagging — the main analysis table |
+
+## rail-etl
+
+| Dataset | Description |
+|---|---|
+| [rtt_services](rail-etl/rtt_services.md) | RTT actual-vs-scheduled times, cancellations and formation for THA/RDG/PAD |
+
 ## gov-etl
 
 | Dataset | Description |
@@ -31,8 +63,10 @@ One line per dataset. For full details, follow the link.
 | [ons_msoa_boundaries](gov-etl/ons_msoa_boundaries.md) | Polygon boundaries for 7,264 MSOAs in England & Wales with Rural-Urban Classification |
 | [ons_msoa_income](gov-etl/ons_msoa_income.md) | Modelled household income estimates by MSOA, financial year ending March 2023 |
 | [ons_inflation](gov-etl/ons_inflation.md) | Monthly CPI, CPIH and RPI inflation series from June 1948 to present |
+| [exchange_rates](gov-etl/exchange_rates.md) | Daily ECB foreign exchange reference rates for 46 currencies (32 still active) vs EUR, from 1999 to present |
 | [traffic_census](gov-etl/traffic_census.md) | Annual average daily vehicle flows at ~30k road count points, 2000 to present |
 | [nomis_census_industry](gov-etl/nomis_census_industry.md) | Census 2021 employment by industry sector for all wards in England & Wales |
 | [nomis_census_occupation](gov-etl/nomis_census_occupation.md) | Census 2021 employment by occupation group for all wards in England & Wales |
 | [os_terrain_50](gov-etl/os_terrain_50.md) | 50m-resolution DTM elevation for all of Great Britain (~114M points) |
 | [ea_lidar_1m](gov-etl/ea_lidar_1m.md) | 1m-resolution bare-earth DTM for England — currently loaded for West Berkshire |
+| [world_bank_gdp](gov-etl/world_bank_gdp.md) | World Bank GDP indicators (current, constant 2015, PPP, per capita) for all countries, 1960 onwards |

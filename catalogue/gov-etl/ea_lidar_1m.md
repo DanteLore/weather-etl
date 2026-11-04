@@ -145,6 +145,10 @@ python ea_lidar_1m/ea_lidar_1m_load.py --bbox 530000,180000,540000,190000
 Chunks already uploaded are not re-uploaded. Chunks outside EA coverage are silently
 skipped (the WCS returns an exception report which the loader treats as no data).
 
+If a chunk fails after retries (see Known issues below), the loader prints the failing
+`--bbox` range at the end of the run — re-run the loader with that bbox to retry just
+that chunk.
+
 ## Source ETL / code
 
 `github.com/dantelore/gov-etl`, `ea_lidar_1m/ea_lidar_1m_load.py`.
@@ -165,6 +169,11 @@ loader with the same bbox to refresh a previously loaded area.
   within a partition can be slow and costly.
 - Some rural or recently surveyed areas may have older or lower-quality source flights
   within the composite.
+- The EA WCS endpoint can stall mid-response with no error — the connection stays open
+  but no bytes arrive. The loader detects this via a stall timeout and retries
+  automatically (`STALL_TIMEOUT`, `FETCH_WALL_CLOCK_TIMEOUT`, `FETCH_RETRIES` in
+  `ea_lidar_1m_load.py`); a chunk that comes back short (fewer pixels than a full 10km
+  tile) raises rather than silently loading a truncated result.
 
 ## Interested parties
 
