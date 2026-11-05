@@ -33,7 +33,7 @@ rm -rf build
 echo "Terraform time!"
 (
   cd terraform || exit
-  terraform apply -auto-approve
+  terraform apply -auto-approve || exit 1
   rm -rf weather_etl.zip
   rm -rf weather_data_model.zip
 )
