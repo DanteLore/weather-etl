@@ -63,6 +63,7 @@ One line per dataset. For full details, follow the link.
 | Dataset | Description |
 |---|---|
 | [incoming.rtt_services](rail-etl/incoming/rtt_services.md) | RTT actual-vs-scheduled times, cancellations and formation at the Newbury–Paddington corridor stations, daily |
+| [incoming.hsp_service_calls](rail-etl/incoming/hsp_service_calls.md) | HSP times and reason codes at every stop of Newbury-line trains, with a rolling year of history |
 | [incoming.orr_rail_performance](rail-etl/incoming/orr_rail_performance.md) | The 20 ORR passenger rail performance tables, one row per cell, one snapshot per ORR release |
 
 ## rail-etl / lake (modelled)
@@ -71,6 +72,8 @@ One line per dataset. For full details, follow the link.
 |---|---|
 | [lake.rtt_service_calls](rail-etl/lake/rtt_service_calls.md) | One row per train call at a corridor station, typed and de-duplicated, rebuilt daily |
 | [lake.rtt_services](rail-etl/lake/rtt_services.md) | One row per corridor train per day: lateness, cancellations, on time / PPM, short formation, rebuilt daily |
+| [lake.hsp_service_calls](rail-etl/lake/hsp_service_calls.md) | One row per stop of every Newbury-line train, with lateness, cancellations and reason codes, rebuilt daily |
+| [lake.hsp_services](rail-etl/lake/hsp_services.md) | One row per Newbury-line train per day across its whole journey, rebuilt daily |
 | [lake.orr_operator_cancellations](rail-etl/lake/orr_operator_cancellations.md) | ORR trains planned and cancelled by operator per rail period, rebuilt daily |
 | [lake.orr_operator_punctuality](rail-etl/lake/orr_operator_punctuality.md) | ORR on time and "Time to N" at station stops by operator per rail period, rebuilt daily |
 | [lake.orr_operator_ppm](rail-etl/lake/orr_operator_ppm.md) | ORR Public Performance Measure by operator and sector per rail period, rebuilt daily |
