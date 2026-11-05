@@ -56,6 +56,21 @@ Updated daily at 06:00 UTC with the previous day's data.
 
 **History from:** 2020-01-01. Typical volume: 48 rows/day (one per settlement period). Values are zero on most days; non-zero when specific balancing service costs are applied.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.049 GB, 2,499 objects | $0.001 |
+| Lambda `load_elexon_netbsad_data` | 30 runs × 4.8 s × 128 MB | <$0.001 |
+| S3 writes | ~30 files + 30 partition-DDL result files | <$0.001 |
+| Athena (loader) | 30 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.002** |
+
+Querying it: a full scan reads about 0.05 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - These adjustments are the most opaque part of the cash-out calculation. The Elexon BSC documentation (Section T) is the authoritative reference for interpreting each field.

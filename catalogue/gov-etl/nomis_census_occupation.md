@@ -56,6 +56,17 @@ Open Government Licence v3.0. Free to use with attribution to ONS/Nomis.
 
 Census 2021 snapshot — static, will not change. The next Census is expected ~2031.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.000 GB, 1 objects | <$0.001 |
+| **Total** | | **<$0.001** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - Resident-based, not workplace-based. See `nomis_census_industry` caveats — same applies here.

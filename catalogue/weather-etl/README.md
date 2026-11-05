@@ -48,3 +48,31 @@ Rebuilt nightly at **06:00 UTC** by the `model_weather_data` Lambda. Each run de
 - **MIDAS data is a frozen snapshot** (1875–2020, CEDA 202107 release). It will not be updated. Glue partitions are not registered — run `MSCK REPAIR TABLE incoming.midas` in Athena before querying.
 - **`lake.weather` excludes Chivenor July 2022** readings below −5°C. The raw data is still in `incoming.weather`.
 - **`incoming.weather` is written every hour**, not once a day. The DataHub API returns 48 hours of history per call, so a missed run doesn't cause a gap — the next run will cover it.
+
+## Running costs
+
+Estimated from measurements taken 2026-11-05, at AWS eu-west-1 list prices in USD, excluding tax and the free tier:
+
+| Component | Basis | Price |
+|---|---|---|
+| S3 storage | Size of each table's S3 location | $0.023 per GB-month |
+| S3 writes / reads | New files and Athena result files; objects read by nightly rebuilds | $0.005 per 1,000 PUTs; $0.0004 per 1,000 GETs |
+| Lambda | Invocations × average duration × memory (CloudWatch, last 30 days) | $0.0000166667 per GB-second + $0.20 per million requests |
+| Athena | Bytes scanned by each pipeline query (Athena query history, last 30 days); 10 MB minimum per query; DDL such as `ADD PARTITION` is free | $5 per TB scanned |
+| CloudWatch Logs | Log ingestion per Lambda (CloudWatch, last 30 days) | $0.57 per GB |
+
+Lambdas that load several tables are split evenly between them; a model Lambda is split by bytes scanned per table. The free tier currently covers all Lambda usage, so Lambda is billed at about $0 in practice. Each entry's **Running costs (estimated)** section has the per-table breakdown.
+
+| Dataset | Layer | Est. $/month |
+|---|---|---|
+| [weather](lake/weather.md) | lake | $0.747 |
+| [weather](incoming/weather.md) | incoming | $0.122 |
+| [midas](incoming/midas.md) | incoming | $0.062 |
+| [weather_monthly_site_summary](lake/weather_monthly_site_summary.md) | lake | $0.023 |
+| [weather_stations](lake/weather_stations.md) | lake | <$0.001 |
+| **Total** | | **$0.95** |
+
+| Lambda | Memory | Runs / 30 days | Avg duration | Errors / 30 days | Est. $/month (compute + logs) |
+|---|---|---|---|---|---|
+| `load_weather_data` | 128 MB | 720 | 8.6 s | 0 | $0.014 |
+| `model_weather_data` | 128 MB | 46 | 58.6 s | 17 | $0.009 |

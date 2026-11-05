@@ -46,6 +46,21 @@ US government open data. No copyright restrictions. Free to use, share and adapt
 
 Updated daily at 20:00 UTC on weekdays. The EIA publishes the previous business day's price; the day's price itself is published after market close (typically ~17:00 US Eastern time, so ~22:00 UTC). Weekend and holiday dates are structurally absent.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.000 GB, 83 objects | <$0.001 |
+| Lambda `load_eia_brent_crude_data` | 34 runs × 15.7 s × 128 MB | $0.001 |
+| S3 writes | ~34 files + 54 partition-DDL result files | $0.001 |
+| Athena (loader) | 54 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.002** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - **Weekends and US public holidays are absent.** This is not a gap — there is no traded price on those days. Do not interpret missing dates as pipeline failures. Use `CROSS JOIN` with a calendar table and `COALESCE` or forward-fill if you need a continuous daily series.

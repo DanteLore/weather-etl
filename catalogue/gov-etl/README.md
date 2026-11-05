@@ -43,3 +43,38 @@ Coordinate columns are `x_coordinate` (easting) and `y_coordinate` (northing) in
 | [ea_lidar_1m](ea_lidar_1m.md) | `incoming.ea_lidar_1m_dtm` | 1m DTM elevation for England (selected areas — currently West Berkshire) |
 | [exchange_rates](exchange_rates.md) | `incoming.exchange_rates_frankfurter` | Daily ECB reference rates for 46 currencies vs EUR, 1999–present |
 | [world_bank_gdp](world_bank_gdp.md) | `incoming.world_bank_gdp` | World Bank GDP indicators for all countries, 1960 onwards |
+
+## Running costs
+
+Estimated from measurements taken 2026-11-05, at AWS eu-west-1 list prices in USD, excluding tax and the free tier:
+
+| Component | Basis | Price |
+|---|---|---|
+| S3 storage | Size of each table's S3 location | $0.023 per GB-month |
+| S3 writes / reads | New files and Athena result files; objects read by nightly rebuilds | $0.005 per 1,000 PUTs; $0.0004 per 1,000 GETs |
+| Lambda | Invocations × average duration × memory (CloudWatch, last 30 days) | $0.0000166667 per GB-second + $0.20 per million requests |
+| Athena | Bytes scanned by each pipeline query (Athena query history, last 30 days); 10 MB minimum per query; DDL such as `ADD PARTITION` is free | $5 per TB scanned |
+| CloudWatch Logs | Log ingestion per Lambda (CloudWatch, last 30 days) | $0.57 per GB |
+
+Lambdas that load several tables are split evenly between them; a model Lambda is split by bytes scanned per table. The free tier currently covers all Lambda usage, so Lambda is billed at about $0 in practice. Each entry's **Running costs (estimated)** section has the per-table breakdown.
+
+| Dataset | Layer | Est. $/month |
+|---|---|---|
+| [ea_lidar_1m](ea_lidar_1m.md) | incoming | $0.091 |
+| [house_prices](house_prices.md) | incoming | $0.037 |
+| [os_open_uprn](os_open_uprn.md) | incoming | $0.025 |
+| [ons_bua_boundaries](ons_bua_boundaries.md) | incoming | $0.005 |
+| [os_terrain_50](os_terrain_50.md) | incoming | $0.004 |
+| [voa_rating_list](voa_rating_list.md) | incoming | $0.003 |
+| [traffic_census](traffic_census.md) | incoming | $0.001 |
+| [os_code_point_open](os_code_point_open.md) | incoming | $0.001 |
+| [ons_postcode_lookup](ons_postcode_lookup.md) | incoming | <$0.001 |
+| [ons_msoa_boundaries](ons_msoa_boundaries.md) | incoming | <$0.001 |
+| [exchange_rates](exchange_rates.md) | incoming | <$0.001 |
+| [ons_ctyua_boundaries](ons_ctyua_boundaries.md) | incoming | <$0.001 |
+| [ons_msoa_income](ons_msoa_income.md) | incoming | <$0.001 |
+| [world_bank_gdp](world_bank_gdp.md) | incoming | <$0.001 |
+| [nomis_census_industry](nomis_census_industry.md) | incoming | <$0.001 |
+| [nomis_census_occupation](nomis_census_occupation.md) | incoming | <$0.001 |
+| [ons_inflation](ons_inflation.md) | incoming | <$0.001 |
+| **Total** | | **$0.17** |

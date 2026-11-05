@@ -172,6 +172,17 @@ The VOA publish change updates twice weekly. The loaded baseline is epoch `0001`
 2026 rating list (effective April 2026). Re-run the loader to refresh; update `DOWNLOAD_URL`
 in the script if a newer epoch is available.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.149 GB, 111 objects | $0.003 |
+| **Total** | | **$0.003** |
+
+Querying it: a full scan reads about 0.15 GB, roughly $0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - 1,054 rows have a null postcode; these are stored in a separate `unknown` partition.

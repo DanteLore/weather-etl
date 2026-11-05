@@ -55,6 +55,17 @@ section in the gov-etl README for the spatial partitioning standard.
 OS publish Open UPRN updates quarterly. Re-run the loader to refresh — it downloads the
 full dataset and re-partitions from scratch.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 1.092 GB, 57 objects | $0.025 |
+| **Total** | | **$0.025** |
+
+Querying it: a full scan reads about 1.09 GB, roughly $0.005 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - A small number of UPRNs have null coordinates (non-geographic or pending addresses).

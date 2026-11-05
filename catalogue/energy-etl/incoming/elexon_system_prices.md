@@ -57,6 +57,21 @@ Updated every 30 minutes. Elexon publishes system prices after each settlement p
 
 **History from:** 2020-01-01.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.044 GB, 2,501 objects | $0.001 |
+| Lambda `load_elexon_wholesale_price_data` (½ share) | 1,440 runs × 11.3 s × 128 MB | $0.017 |
+| S3 writes | ~720 files + 2,869 partition-DDL result files | $0.032 |
+| Athena (loader) | 2,869 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | $0.001 |
+| **Total** | | **$0.051** |
+
+Querying it: a full scan reads about 0.04 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - System prices for the most recent periods are preliminary. Final settled prices may differ. Elexon issues corrections; this table is not backfilled with corrections automatically.

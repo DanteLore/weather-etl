@@ -77,3 +77,56 @@ Rebuilt nightly at **07:00 UTC** by the `model_energy_data` Lambda, after the 06
 - **Incoming partitions use unpadded string year/month/day.** Use `DATE_PARSE(year \|\| '-' \|\| month \|\| '-' \|\| day, '%Y-%c-%e')` in Athena — `%c`/`%e` handle single-digit month and day. `MAKE_DATE` is not available in this Presto version.
 - **Prefer `elexon_fuelhh` over `carbon_intensity_generation`** for MW-level generation figures; use the carbon intensity tables for intensity index and percentage mix.
 - **Use `lake.remit` for outage state, not `incoming.remit`.** Incoming holds every revision, and `MAX(revision_number)` per `mrid` is not a safe shortcut (mrids are reused, revision numbers repeat). In `lake.remit`, exclude `Dismissed` outages and filter by `event_start_ts`/`event_end_ts` for "current".
+
+## Running costs
+
+Estimated from measurements taken 2026-11-05, at AWS eu-west-1 list prices in USD, excluding tax and the free tier:
+
+| Component | Basis | Price |
+|---|---|---|
+| S3 storage | Size of each table's S3 location | $0.023 per GB-month |
+| S3 writes / reads | New files and Athena result files; objects read by nightly rebuilds | $0.005 per 1,000 PUTs; $0.0004 per 1,000 GETs |
+| Lambda | Invocations × average duration × memory (CloudWatch, last 30 days) | $0.0000166667 per GB-second + $0.20 per million requests |
+| Athena | Bytes scanned by each pipeline query (Athena query history, last 30 days); 10 MB minimum per query; DDL such as `ADD PARTITION` is free | $5 per TB scanned |
+| CloudWatch Logs | Log ingestion per Lambda (CloudWatch, last 30 days) | $0.57 per GB |
+
+Lambdas that load several tables are split evenly between them; a model Lambda is split by bytes scanned per table. The free tier currently covers all Lambda usage, so Lambda is billed at about $0 in practice. Each entry's **Running costs (estimated)** section has the per-table breakdown.
+
+| Dataset | Layer | Est. $/month |
+|---|---|---|
+| [remit](lake/remit.md) | lake | $0.288 |
+| [carbon_intensity_regional](incoming/carbon_intensity_regional.md) | incoming | $0.088 |
+| [elexon_fuelhh](incoming/elexon_fuelhh.md) | incoming | $0.079 |
+| [remit](incoming/remit.md) | incoming | $0.054 |
+| [elexon_system_prices](incoming/elexon_system_prices.md) | incoming | $0.051 |
+| [elexon_market_index](incoming/elexon_market_index.md) | incoming | $0.051 |
+| [elexon_fuelhh](lake/elexon_fuelhh.md) | lake | $0.048 |
+| [elexon_netbsad](lake/elexon_netbsad.md) | lake | $0.045 |
+| [elexon_system_prices](lake/elexon_system_prices.md) | lake | $0.043 |
+| [elexon_market_index](lake/elexon_market_index.md) | lake | $0.041 |
+| [elexon_bod](incoming/elexon_bod.md) | incoming | $0.038 |
+| [carbon_intensity_generation](incoming/carbon_intensity_generation.md) | incoming | $0.027 |
+| [carbon_intensity_national](incoming/carbon_intensity_national.md) | incoming | $0.027 |
+| [elexon_pn](incoming/elexon_pn.md) | incoming | $0.024 |
+| [elexon_boalf](incoming/elexon_boalf.md) | incoming | $0.008 |
+| [eia_brent_crude](lake/eia_brent_crude.md) | lake | $0.003 |
+| [natgas_sap](lake/natgas_sap.md) | lake | $0.002 |
+| [elexon_netbsad](incoming/elexon_netbsad.md) | incoming | $0.002 |
+| [eia_brent_crude](incoming/eia_brent_crude.md) | incoming | $0.002 |
+| [natgas_sap](incoming/natgas_sap.md) | incoming | $0.001 |
+| [repd](incoming/repd.md) | incoming | $0.001 |
+| **Total** | | **$0.92** |
+
+| Lambda | Memory | Runs / 30 days | Avg duration | Errors / 30 days | Est. $/month (compute + logs) |
+|---|---|---|---|---|---|
+| `load_carbon_intensity_data` | 128 MB | 1,471 | 9.0 s | 30 | $0.029 |
+| `load_elexon_wholesale_price_data` | 128 MB | 1,440 | 11.3 s | 0 | $0.036 |
+| `load_elexon_fuelhh_data` | 128 MB | 1,440 | 8.4 s | 0 | $0.027 |
+| `load_elexon_netbsad_data` | 128 MB | 30 | 4.8 s | 0 | <$0.001 |
+| `load_elexon_bod_data` | 512 MB | 31 | 11.9 s | 0 | $0.003 |
+| `load_elexon_boalf_data` | 512 MB | 30 | 4.1 s | 0 | $0.001 |
+| `load_elexon_pn_data` | 512 MB | 30 | 7.5 s | 0 | $0.002 |
+| `load_remit_data` | 128 MB | 1,440 | 4.0 s | 0 | $0.013 |
+| `load_natgas_sap_data` | 128 MB | 31 | 6.6 s | 0 | <$0.001 |
+| `load_eia_brent_crude_data` | 128 MB | 34 | 15.7 s | 5 | $0.001 |
+| `model_energy_data` | 128 MB | 30 (projected) | 42.0 s | — | $0.003 |

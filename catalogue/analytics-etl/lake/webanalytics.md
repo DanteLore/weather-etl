@@ -92,6 +92,20 @@ Updated hourly via EventBridge. Each run covers the window from the last process
 
 History from: 2025-01-01.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [analytics-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.154 GB, 3,913 objects | $0.004 |
+| Lambda `dantelore-analytics-modelling` | 720 runs × 16.9 s × 256 MB | $0.051 |
+| Athena (modelling) | 1,416 queries, 6.18 GB scanned (measured, last 30 days) | $0.074 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.13** |
+
+Querying it: a full scan reads about 0.15 GB, roughly $0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - Geolocation fields (`geo_*`) are empty strings (not NULL) when an IP lookup fails or times out. Filter with `geo_country != ''` rather than `geo_country IS NOT NULL`.

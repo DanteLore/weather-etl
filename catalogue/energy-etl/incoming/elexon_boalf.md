@@ -62,6 +62,21 @@ Updated daily at 06:00 UTC with the previous day's data. Approximately one day o
 
 **History from:** 2020-01-01. Typical volume: ~18,000 rows/day. The Elexon API endpoint is BOALF (Final) — there is no plain BOAL endpoint.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.304 GB, 2,498 objects | $0.007 |
+| Lambda `load_elexon_boalf_data` | 30 runs × 4.1 s × 512 MB | $0.001 |
+| S3 writes | ~30 files + 30 partition-DDL result files | <$0.001 |
+| Athena (loader) | 30 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.008** |
+
+Querying it: a full scan reads about 0.30 GB, roughly $0.002 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - `so_flag = true` indicates the instruction was for system security rather than energy imbalance. Costs associated with SO-flagged acceptances are excluded from the cash-out price calculation. Separate these if doing energy-only balancing cost analysis.

@@ -54,6 +54,21 @@ Open data, Creative Commons. No restrictions on use.
 
 Written every 30 minutes. One row per period.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.034 GB, 12,378 objects | $0.001 |
+| Lambda `load_carbon_intensity_data` (⅓ share) | 1,471 runs × 9.0 s × 128 MB | $0.009 |
+| S3 writes | ~490 files + 1,441 partition-DDL result files | $0.017 |
+| Athena (loader) | 1,441 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | $0.001 |
+| **Total** | | **$0.027** |
+
+Querying it: a full scan reads about 0.03 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - Percentage figures include ESO estimates for embedded (behind-the-meter) wind and solar (rooftop solar, small wind farms below the transmission threshold). `elexon_fuelhh` covers metered transmission-connected plant only — wind and solar will be understated there, particularly in summer. The two datasets are **not directly comparable**.

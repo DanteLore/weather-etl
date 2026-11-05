@@ -121,6 +121,17 @@ OS publish Terrain 50 updates periodically (roughly annually). Re-run the loader
 Delete the cached zip first if you want to force a re-download:
 `del %TEMP%\gov_etl_cache\os_terrain_50.zip`
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.179 GB, 2,858 objects | $0.004 |
+| **Total** | | **$0.004** |
+
+Querying it: a full scan reads about 0.18 GB, roughly $0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - 50m resolution — adequate for regional terrain analysis but too coarse for urban flood

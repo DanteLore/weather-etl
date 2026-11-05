@@ -53,6 +53,21 @@ SQL summary: groups `lake.weather` by `(site_id, site_name, lat, lon, year, mont
 
 Full table rebuild every night at 06:00 UTC, immediately after `lake.weather` is rebuilt in the same Lambda invocation. The entire dataset is deleted and rewritten each run.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [weather-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.000 GB, 2 objects | <$0.001 |
+| Lambda `model_weather_data` (1% share) | 42 rebuilds/month | <$0.001 |
+| Athena (rebuild) | 42 × 35 MB scanned of `lake.weather` | $0.007 |
+| S3 reads (rebuild) | 42 × 960 objects | $0.016 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.023** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - Temperature percentiles use Athena's `approx_percentile`, which is an approximation algorithm. Results are accurate to within ~1% but not exact.

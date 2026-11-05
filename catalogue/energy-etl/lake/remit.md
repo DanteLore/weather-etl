@@ -74,6 +74,21 @@ Spot-checked: `48W00000THURB-3O-ELXP-RMT-10000056` → 1 outage (63 updates, fin
 
 Full rebuild every night at 07:00 UTC by `model_energy_data`: the S3 folder is deleted and the whole table rewritten from `incoming.remit` (~1 GB scanned, ~11 seconds). Incoming is polled every 30 minutes, so the lake lags by up to a day. Queries at 07:00 UTC may briefly see an empty table.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.017 GB, 21 objects | <$0.001 |
+| Lambda `model_energy_data` (72% share) | 30 rebuilds/month | $0.002 |
+| Athena (rebuild) | 30 × 978 MB scanned of `incoming.remit` | $0.147 |
+| S3 reads (rebuild) | 30 × 11,564 objects | $0.139 |
+| CloudWatch Logs | Lambda log ingestion | $0 |
+| **Total** | | **$0.29** |
+
+Querying it: a full scan reads about 0.02 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - **Exclude `Dismissed` when counting outages.** 88,419 of 222,050 outages (40%) end Dismissed — withdrawn notifications. Final states: 68,338 Active, 65,293 Inactive, 88,419 Dismissed.

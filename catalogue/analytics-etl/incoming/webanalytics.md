@@ -79,6 +79,20 @@ CloudFront writes log files roughly every hour. The `partitioner-lambda` moves e
 
 History from: 2025-01-01.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [analytics-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.364 GB, 212,673 objects | $0.008 |
+| Lambda `dantelore-webanalytics-partitioner` | 103,177 runs × 0.17 s × 128 MB | $0.057 |
+| S3 writes (CloudFront log delivery) | ~103,177 log files/month (one partitioner run each); any copies the partitioner writes are not measured | $0.516 |
+| CloudWatch Logs | Lambda log ingestion | $0.059 |
+| **Total** | | **$0.64** |
+
+Querying it: a full scan reads about 0.36 GB, roughly $0.002 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - CloudFront logs use `-` (not NULL) to represent absent or not-applicable field values. Athena will return these as the string `"-"`, not as SQL NULL. Filter accordingly.

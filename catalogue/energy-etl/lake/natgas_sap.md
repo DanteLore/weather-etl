@@ -47,6 +47,21 @@ SQL summary: one row per gas day, keeping the latest `applicable_at`; strings ca
 
 Full rebuild every night at 07:00 UTC by `model_energy_data`: the S3 folder is deleted and the whole table rewritten from `incoming.natgas_sap`. Incoming is loaded daily at 13:00 UTC, so the newest gas day appears in the lake the following morning. The rebuild takes about 30 seconds for all energy lake tables; queries at 07:00 UTC may briefly see an empty table.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.000 GB, 1 objects | <$0.001 |
+| Lambda `model_energy_data` (0% share) | 30 rebuilds/month | <$0.001 |
+| Athena (rebuild) | 30 × 1 MB scanned of `incoming.natgas_sap` | $0.002 |
+| S3 reads (rebuild) | 30 × 69 objects | $0.001 |
+| CloudWatch Logs | Lambda log ingestion | $0 |
+| **Total** | | **$0.002** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - `quality_indicator` is `L` on 2,054 of 2,060 days and `A` on 6. Its meaning is unconfirmed — see the incoming entry.

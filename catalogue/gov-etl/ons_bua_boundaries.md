@@ -140,6 +140,17 @@ use `geometry_osgb_wkt` for distance calculations and joins against OSGB dataset
 BUA boundaries are updated infrequently — current vintage is April 2024. Check the ONS
 Open Geography Portal for new releases and re-run the loader when a new vintage is published.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.217 GB, 1 objects | $0.005 |
+| **Total** | | **$0.005** |
+
+Querying it: a full scan reads about 0.22 GB, roughly $0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - WKT geometry strings can be large (tens to hundreds of KB per feature) — avoid `SELECT *`

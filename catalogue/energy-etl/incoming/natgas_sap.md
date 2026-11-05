@@ -51,6 +51,21 @@ Updated daily at 13:00 UTC (the SAP for a gas day is typically published at 12:0
 
 **History from:** ~5 years of rolling history is available from the API (approximately 2021-03-18 onwards). The API does not expose data older than its rolling window.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.000 GB, 69 objects | <$0.001 |
+| Lambda `load_natgas_sap_data` | 31 runs × 6.6 s × 128 MB | <$0.001 |
+| S3 writes | ~31 files + 61 partition-DDL result files | $0.001 |
+| Athena (loader) | 61 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.001** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Source & migration note
 
 > The legacy SOAP API at `marketinformation.natgrid.co.uk` was decommissioned — the domain no longer resolves. This pipeline uses the replacement REST API. Monitor [apideveloper.nationalgas.com](https://apideveloper.nationalgas.com) and [data.nationalgas.com](https://data.nationalgas.com) for any further changes.

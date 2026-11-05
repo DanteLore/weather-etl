@@ -55,6 +55,21 @@ Updated daily at 06:00 UTC with the previous day's data. Approximately one day o
 
 **History from:** 2020-01-01. Typical volume: ~125,000 rows/day. Storage format is Parquet (Snappy) — ~800 KB/day.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.948 GB, 2,485 objects | $0.022 |
+| Lambda `load_elexon_pn_data` | 30 runs × 7.5 s × 512 MB | $0.002 |
+| S3 writes | ~30 files + 30 partition-DDL result files | <$0.001 |
+| Athena (loader) | 30 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.024** |
+
+Querying it: a full scan reads about 0.95 GB, roughly $0.005 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - A single BM unit may submit multiple PN segments per period (a piecewise linear profile). Sum or interpolate `level_from`/`level_to` across segments to reconstruct the full output profile within a period.
