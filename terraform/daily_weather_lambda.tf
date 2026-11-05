@@ -12,7 +12,7 @@ variable "datapoint_etl_cloudwatch_event" {
 
 resource "aws_cloudwatch_log_group" "datapoint_etl_loggroup" {
   name              = "/aws/lambda/${var.datapoint_etl_function_name}"
-  retention_in_days = 3
+  retention_in_days = 7
 }
 
 resource "aws_lambda_function" "datapoint_etl_lambda_function" {

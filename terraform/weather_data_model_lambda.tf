@@ -12,7 +12,7 @@ variable "weather_data_model_cloudwatch_event" {
 
 resource "aws_cloudwatch_log_group" "weather_data_model_loggroup" {
   name              = "/aws/lambda/${var.weather_data_model_lambda}"
-  retention_in_days = 3
+  retention_in_days = 7
 }
 
 resource "aws_lambda_function" "weather_data_model_lambda_function" {
