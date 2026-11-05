@@ -52,7 +52,7 @@ Open data, Creative Commons. No restrictions on use.
 
 ## Freshness & update cadence
 
-Written every 30 minutes. One row per period.
+Written every 30 minutes. One row per period. Each run re-fetches the last 6 hours of finished periods and rewrites one file per period, so a run lost to an API outage is filled in by a later one, and values the API revises within 6 hours are picked up.
 
 ## Running costs (estimated)
 
@@ -74,6 +74,7 @@ Querying it: a full scan reads about 0.03 GB, roughly <$0.001 per query (Athena 
 - Percentage figures include ESO estimates for embedded (behind-the-meter) wind and solar (rooftop solar, small wind farms below the transmission threshold). `elexon_fuelhh` covers metered transmission-connected plant only — wind and solar will be understated there, particularly in summer. The two datasets are **not directly comparable**.
 - **Do not average regional carbon intensity percentages** to get a national figure — regions are different sizes and an unweighted average gives wrong results. This table (`carbon_intensity_generation`) is already the correct national aggregate.
 - Percentages may not sum to exactly 100 due to rounding.
+- 2026-04-21 and 2026-04-22 have both a bulk-load day file and per-period files, so periods on those days appear twice; de-duplicate on `period_from`.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena.
 - For absolute MW generation figures with individual interconnector breakdown, use `incoming.elexon_fuelhh`.
 
