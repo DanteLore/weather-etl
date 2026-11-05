@@ -73,7 +73,7 @@ Querying it: a full scan reads about 0.02 GB, roughly <$0.001 per query (Athena 
 
 - `intensity_actual` is the API's figure up to 6 hours after the period ends; any later revisions aren't picked up. Re-run the bulk load for a date range to refresh it.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena, not `MAKE_DATE`.
-- Lambda and bulk load use different S3 key patterns (per-period filename vs. per-day filename). Both are readable via the same Glue table. Some days have both kinds of file, so a period can appear twice; [`lake.carbon_intensity_national`](../lake/carbon_intensity_national.md) de-duplicates.
+- Lambda and bulk load use different S3 key patterns (per-period filename vs. per-day filename). Both are readable via the same Glue table. Each day has one or the other: where a bulk load covered a day that already had per-period files, the per-period files were deleted (2026-11-05). One period on 2021-04-19 appears twice within its file; [`lake.carbon_intensity_national`](../lake/carbon_intensity_national.md) de-duplicates.
 
 ## Interested parties
 

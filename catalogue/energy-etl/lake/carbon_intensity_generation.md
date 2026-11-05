@@ -64,9 +64,9 @@ Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements ta
 | S3 storage | 0.004 GB, 16 objects | <$0.001 |
 | Lambda `model_energy_data` (share) | 30 rebuilds/month | <$0.001 |
 | Athena (rebuild) | 30 × 37 MB scanned of `incoming.carbon_intensity_generation` | $0.006 |
-| S3 reads (rebuild) | 30 × 12,546 objects | $0.151 |
+| S3 reads (rebuild) | 30 × 3,138 objects | $0.038 |
 | CloudWatch Logs | Lambda log ingestion | $0 |
-| **Total** |  | **$0.16** |
+| **Total** |  | **$0.04** |
 
 The S3 reads grow by about 1,440 objects a month, because the Lambda writes one incoming file per half-hour period.
 
