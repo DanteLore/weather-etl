@@ -1,4 +1,4 @@
-# eia_brent_crude
+# incoming.eia_brent_crude
 
 ## Description
 
@@ -60,4 +60,4 @@ Updated daily at 20:00 UTC on weekdays. The EIA publishes the previous business 
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.eia_brent_crude`](../lake/eia_brent_crude.md) — use that for analysis.

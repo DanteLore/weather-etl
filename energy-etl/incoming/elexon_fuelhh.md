@@ -1,4 +1,4 @@
-# elexon_fuelhh
+# incoming.elexon_fuelhh
 
 ## Description
 
@@ -85,4 +85,4 @@ Updated every 30 minutes, covering the last 48 hours of data. The Lambda overwri
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.elexon_fuelhh`](../lake/elexon_fuelhh.md) — use that for analysis.
