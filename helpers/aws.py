@@ -27,10 +27,9 @@ def delete_folder_from_s3(s3_bucket, folder_key):
     paginator = s3.get_paginator('list_objects_v2')
 
     for page in paginator.paginate(Bucket=s3_bucket, Prefix=folder_key):
-        if 'Contents' in page:
-            for obj in page['Contents']:
-                print(f"Deleting: {obj['Key']}")
-                s3.delete_object(Bucket=s3_bucket, Key=obj['Key'])
+        keys = [{'Key': obj['Key']} for obj in page.get('Contents', [])]
+        if keys:
+            s3.delete_objects(Bucket=s3_bucket, Delete={'Objects': keys})
 
 
 def load_text_from_s3(s3_bucket, s3_key):

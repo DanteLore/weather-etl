@@ -82,21 +82,19 @@ group by site_id, site_name, lat, lon, YEAR(observation_ts), MONTH(observation_t
 '''
 
 
-def build_data_models(data_lake_bucket):
-    # Create the core model
-    delete_folder_from_s3(data_lake_bucket, WEATHER_DIR_NAME)
-    execute_athena_command(WEATHER_TABLE_SQL, "lake", "dantelore.queryresults", wait_seconds=120)
+def rebuild_table(data_lake_bucket, dir_name, sql):
+    delete_folder_from_s3(data_lake_bucket, dir_name)
+    if not execute_athena_command(sql, "lake", "dantelore.queryresults", wait_seconds=120):
+        raise RuntimeError(f"Failed to rebuild {dir_name}")
 
-    # Create the summary table
-    delete_folder_from_s3(data_lake_bucket, SUMMARY_DIR_NAME)
-    execute_athena_command(SUMMARY_TABLE_SQL, "lake", "dantelore.queryresults", wait_seconds=120)
+
+def build_data_models(data_lake_bucket):
+    # Create the core model, then the summary table built from it
+    rebuild_table(data_lake_bucket, WEATHER_DIR_NAME, WEATHER_TABLE_SQL)
+    rebuild_table(data_lake_bucket, SUMMARY_DIR_NAME, SUMMARY_TABLE_SQL)
 
 
 def handler(event, context):
-    try:
-        build_data_models(S3_DATA_LAKE_BUCKET)
-        return {"statusCode": 200, "message": "Success"}
-    except Exception as e:
-        print("Failed to transform data")
-        print(e)
-        return {"statusCode": 500}
+    # Let failures raise so they show up as Lambda errors
+    build_data_models(S3_DATA_LAKE_BUCKET)
+    return {"statusCode": 200, "message": "Success"}

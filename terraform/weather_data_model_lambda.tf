@@ -22,7 +22,7 @@ resource "aws_lambda_function" "weather_data_model_lambda_function" {
   filename         = "weather_data_model.zip"
   function_name    = var.weather_data_model_lambda
   source_code_hash = filebase64sha256("weather_data_model.zip")
-  timeout          = 60
+  timeout          = 300
 }
 
 resource "aws_cloudwatch_event_rule" "time_to_model_weather_data" {
