@@ -43,6 +43,8 @@ cp -Rf helpers build
 (
   cd build || exit
   pip install --quiet --target . -r ../requirements-lambda.txt
+  # zip -r adds to an existing zip and never removes entries, so start from an empty one
+  rm -f ../terraform/weather_etl.zip
   zip -qq -r ../terraform/weather_etl.zip ./*
 )
 rm -rf build
@@ -59,7 +61,8 @@ cp -Rf helpers build
 (
   cd build || exit
   pip install --quiet --target . -r ../requirements-lambda.txt
-  zip -qq -r -u ../terraform/weather_data_model.zip ./*
+  rm -f ../terraform/weather_data_model.zip
+  zip -qq -r ../terraform/weather_data_model.zip ./*
 )
 rm -rf build
 
