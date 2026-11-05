@@ -1,8 +1,8 @@
-# natgas_sap
+# incoming.natgas_sap
 
 ## Description
 
-National Gas System Average Price (SAP) — the volume-weighted average price of natural gas traded on the GB gas network for each gas day, in pence per kilowatt hour (p/kWh). Published daily by National Gas Transmission via their REST API (publication PUBOB603). The SAP is a widely-used reference price for gas imbalance settlement and short-term gas market analysis. Each gas day may have multiple records with different `quality_indicator` values as estimates are refined into actuals.
+National Gas System Average Price (SAP) — the volume-weighted average price of natural gas traded on the GB gas network for each gas day, in pence per kilowatt hour (p/kWh). Published daily by National Gas Transmission via their REST API (publication PUBOB603). The SAP is a widely-used reference price for gas imbalance settlement and short-term gas market analysis. There is one record per gas day: each run overwrites the current and previous month's files, so a revised price replaces the earlier value rather than adding a row. For analysis use [`lake.natgas_sap`](../lake/natgas_sap.md).
 
 ## Classification
 
@@ -32,10 +32,10 @@ Open data. No restrictions on internal use. Attribution to National Gas Transmis
 
 | Field name | Type | Nullable | Key role | Description |
 |---|---|---|---|---|
-| applicable_for | string | No | Primary (with applicable_at) | Gas day date the price applies to (YYYY-MM-DD) |
-| applicable_at | string | No | Primary (with applicable_for) | UTC datetime when this value became applicable; use to get the latest revision per day |
+| applicable_for | string | No | Primary | Gas day date the price applies to (YYYY-MM-DD) |
+| applicable_at | string | No | | UTC datetime (`YYYY-MM-DD HH:MM`) when this value became applicable — the day after the gas day |
 | value | double | No | | System Average Price in pence per kilowatt hour (p/kWh) |
-| quality_indicator | string | No | | `E`=Estimate, `A`=Actual, `C`=Calculated, `S`=Substituted, `L`=Late |
+| quality_indicator | string | No | | Quality code from National Gas. Observed values: `L` (2,054 of 2,060 days) and `A` (6 days) — see caveats |
 | substituted | string | No | | `Y` if the value has been substituted, `N` otherwise |
 | create_date | string | No | | UTC datetime when this record was created/published by National Gas |
 | year | string | No | Partition | Unpadded year |
@@ -47,7 +47,7 @@ Open data. No restrictions on internal use. Attribution to National Gas Transmis
 
 ## Freshness & update cadence
 
-Updated daily at 13:00 UTC (the SAP for a gas day is typically published at 12:00 UTC). The SAP is first published as an estimate (`E`), then refined to an actual (`A`) over subsequent days. The table is append-only — both estimate and actual revisions accumulate.
+Updated daily at 13:00 UTC (the SAP for a gas day is typically published at 12:00 UTC). Each run re-fetches the current and previous calendar month and overwrites both monthly files, so revisions within that window are picked up automatically. Older months are not re-fetched.
 
 **History from:** ~5 years of rolling history is available from the API (approximately 2021-03-18 onwards). The API does not expose data older than its rolling window.
 
@@ -57,10 +57,10 @@ Updated daily at 13:00 UTC (the SAP for a gas day is typically published at 12:0
 
 ## Known issues & caveats
 
-- **The table is append-only versioned.** A gas day typically has both an estimate row and a later actual row. Always filter to `applicable_at = MAX(applicable_at)` per `applicable_for` (gas day) to get the final published price for a day. Using all rows will double-count.
+- **One row per gas day, not versioned.** Monthly files are overwritten on each run, so there is no estimate/actual history — only the latest value fetched. (Checked 2026-11-04: 2,060 rows, 2,060 distinct gas days, continuous from 2021-03-15.)
 - **Partitioned by year/month only** (no day partition), unlike most other tables in this project. Athena partition pruning works at month granularity — queries filtering by day still scan the full month.
 - The gas day runs 06:00–06:00 UTC (not midnight-to-midnight). `applicable_for` is the calendar date of the gas day start.
-- `quality_indicator = 'L'` (Late) indicates the SAP was published after the normal deadline, which can occur around public holidays.
+- `quality_indicator` is `L` on almost every day (2,054 of 2,060) and `A` on 6; no `E` values have been seen. The meaning of `L` here is unconfirmed — it is too common to mean "late publication". Check National Gas's PUBOB603 documentation before relying on it.
 - Partition columns are unpadded strings.
 
 ## Interested parties
@@ -70,4 +70,4 @@ Updated daily at 13:00 UTC (the SAP for a gas day is typically published at 12:0
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.natgas_sap`](../lake/natgas_sap.md) — use that for analysis.

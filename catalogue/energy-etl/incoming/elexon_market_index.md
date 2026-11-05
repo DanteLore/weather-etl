@@ -1,4 +1,4 @@
-# elexon_market_index
+# incoming.elexon_market_index
 
 ## Description
 
@@ -64,4 +64,4 @@ Updated every 30 minutes. Multiple rows per period (one per data provider).
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.elexon_market_index`](../lake/elexon_market_index.md) — use that for analysis.

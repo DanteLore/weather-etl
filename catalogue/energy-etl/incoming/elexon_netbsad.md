@@ -1,4 +1,4 @@
-# elexon_netbsad
+# incoming.elexon_netbsad
 
 ## Description
 
@@ -69,4 +69,4 @@ Updated daily at 06:00 UTC with the previous day's data.
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.elexon_netbsad`](../lake/elexon_netbsad.md) — use that for analysis.

@@ -17,24 +17,35 @@ One line per dataset. For full details, follow the link.
 | [lake.weather_stations](weather-etl/lake/weather_stations.md) | Metadata for the 137 UK/Ireland Met Office monitoring stations |
 | [lake.weather_monthly_site_summary](weather-etl/lake/weather_monthly_site_summary.md) | Percentile-based monthly temperature summary by station, rebuilt nightly |
 
-## energy-etl
+## energy-etl / incoming (raw)
 
 | Dataset | Description |
 |---|---|
-| [carbon_intensity_national](energy-etl/carbon_intensity_national.md) | National UK carbon intensity — forecast, actual and index, half-hourly |
-| [carbon_intensity_regional](energy-etl/carbon_intensity_regional.md) | Per-DNO-region carbon intensity and generation mix, half-hourly |
-| [carbon_intensity_generation](energy-etl/carbon_intensity_generation.md) | National fuel-type generation share (%) per half-hour from the Carbon Intensity API |
-| [elexon_system_prices](energy-etl/elexon_system_prices.md) | Elexon System Buy/Sell Prices and imbalance volume per settlement period |
-| [elexon_market_index](energy-etl/elexon_market_index.md) | Wholesale electricity prices (MID) from N2EX and APX per settlement period |
-| [elexon_fuelhh](energy-etl/elexon_fuelhh.md) | Half-hourly generation by fuel type in MW — the most granular generation mix data |
-| [elexon_bod](energy-etl/elexon_bod.md) | Balancing Mechanism bid and offer prices/levels per BM unit per settlement period |
-| [elexon_boalf](energy-etl/elexon_boalf.md) | Accepted balancing instructions (BOA Level File) per BM unit |
-| [elexon_pn](energy-etl/elexon_pn.md) | Physical Notifications — BM unit planned output profiles before gate closure |
-| [elexon_netbsad](energy-etl/elexon_netbsad.md) | Net Balancing Services Adjustment Data — price adjustments per settlement period |
-| [remit](energy-etl/remit.md) | REMIT outage notifications for UK generation and transmission assets (versioned) |
-| [repd](energy-etl/repd.md) | Renewable Energy Planning Database — all UK renewable/low-carbon projects and their status |
-| [natgas_sap](energy-etl/natgas_sap.md) | National Gas System Average Price (p/kWh) by gas day |
-| [eia_brent_crude](energy-etl/eia_brent_crude.md) | Europe Brent crude oil daily spot price (USD/barrel), weekdays only |
+| [carbon_intensity_national](energy-etl/incoming/carbon_intensity_national.md) | National UK carbon intensity — forecast, actual and index, half-hourly |
+| [carbon_intensity_regional](energy-etl/incoming/carbon_intensity_regional.md) | Per-DNO-region carbon intensity and generation mix, half-hourly |
+| [carbon_intensity_generation](energy-etl/incoming/carbon_intensity_generation.md) | National fuel-type generation share (%) per half-hour from the Carbon Intensity API |
+| [elexon_system_prices](energy-etl/incoming/elexon_system_prices.md) | Elexon System Buy/Sell Prices and imbalance volume per settlement period |
+| [elexon_market_index](energy-etl/incoming/elexon_market_index.md) | Wholesale electricity prices (MID) from N2EX and APX per settlement period |
+| [elexon_fuelhh](energy-etl/incoming/elexon_fuelhh.md) | Half-hourly generation by fuel type in MW — the most granular generation mix data |
+| [elexon_bod](energy-etl/incoming/elexon_bod.md) | Balancing Mechanism bid and offer prices/levels per BM unit per settlement period |
+| [elexon_boalf](energy-etl/incoming/elexon_boalf.md) | Accepted balancing instructions (BOA Level File) per BM unit |
+| [elexon_pn](energy-etl/incoming/elexon_pn.md) | Physical Notifications — BM unit planned output profiles before gate closure |
+| [elexon_netbsad](energy-etl/incoming/elexon_netbsad.md) | Net Balancing Services Adjustment Data — price adjustments per settlement period |
+| [remit](energy-etl/incoming/remit.md) | REMIT outage notifications for UK generation and transmission assets (versioned) |
+| [repd](energy-etl/incoming/repd.md) | Renewable Energy Planning Database — all UK renewable/low-carbon projects and their status |
+| [natgas_sap](energy-etl/incoming/natgas_sap.md) | National Gas System Average Price (p/kWh) by gas day |
+| [eia_brent_crude](energy-etl/incoming/eia_brent_crude.md) | Europe Brent crude oil daily spot price (USD/barrel), weekdays only |
+
+## energy-etl / lake (modelled)
+
+| Dataset | Description |
+|---|---|
+| [lake.elexon_fuelhh](energy-etl/lake/elexon_fuelhh.md) | Half-hourly generation by fuel type (MW), one row per settlement period, rebuilt nightly |
+| [lake.elexon_system_prices](energy-etl/lake/elexon_system_prices.md) | System Buy/Sell Prices and imbalance volume, one row per settlement period, rebuilt nightly |
+| [lake.elexon_market_index](energy-etl/lake/elexon_market_index.md) | Wholesale power price per settlement period, volume-weighted across providers, rebuilt nightly |
+| [lake.elexon_netbsad](energy-etl/lake/elexon_netbsad.md) | Balancing services price adjustments, one row per settlement period, rebuilt nightly |
+| [lake.natgas_sap](energy-etl/lake/natgas_sap.md) | Gas System Average Price (p/kWh), one row per gas day, rebuilt nightly |
+| [lake.eia_brent_crude](energy-etl/lake/eia_brent_crude.md) | Brent crude spot price (USD/barrel), one row per trading day, rebuilt nightly |
 
 ## analytics-etl
 

@@ -1,4 +1,4 @@
-# elexon_system_prices
+# incoming.elexon_system_prices
 
 ## Description
 
@@ -71,4 +71,4 @@ Updated every 30 minutes. Elexon publishes system prices after each settlement p
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.elexon_system_prices`](../lake/elexon_system_prices.md) — use that for analysis.
