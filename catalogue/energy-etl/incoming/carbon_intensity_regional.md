@@ -58,7 +58,7 @@ Open data, Creative Commons. No restrictions on use.
 
 ## Freshness & update cadence
 
-Written every 30 minutes. Each run writes one row per region (14 rows) for the current period.
+Written every 30 minutes, one file per period with one row per region (18 rows, including the England, Scotland, Wales and GB aggregates). Each run re-fetches the last 6 hours of finished periods and rewrites one file per period, so a run lost to an API outage is filled in by a later one, and values the API revises within 6 hours are picked up.
 
 ## Running costs (estimated)
 
@@ -80,6 +80,7 @@ Querying it: a full scan reads about 0.97 GB, roughly $0.005 per query (Athena b
 
 - No `intensity_actual` field — regional data only provides forecast intensity, unlike national.
 - Percentage fields may not sum to exactly 100 due to rounding in the source API.
+- 2026-04-21 and 2026-04-22 have both a bulk-load day file and per-period files, so periods on those days appear twice; de-duplicate on `period_from` and `region_id`.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena.
 - Regional boundaries follow DNO zones, not administrative geography. Joining to local authority or postcode data requires a separate lookup.
 

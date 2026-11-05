@@ -46,11 +46,11 @@ S3 key pattern (bulk load, per-day): `carbon_intensity/national/year={Y}/month={
 
 ## Source ETL / code
 
-`energy-etl` repo, `carbon_intensity_etl/`. Lambda runs every 30 minutes fetching the current period. Bulk historical load via `bulk_load.py` in 13-day chunks (API maximum is 14 days per request).
+`energy-etl` repo, `carbon_intensity_etl/`. Lambda runs every 30 minutes fetching the last 6 hours of finished periods. Bulk historical load via `bulk_load.py` in 13-day chunks (API maximum is 14 days per request).
 
 ## Freshness & update cadence
 
-Written every 30 minutes by Lambda. Each run writes one record for the current period. `intensity_actual` is null at write time and is not backfilled — the bulk load is the only way to populate actuals historically.
+Written every 30 minutes by Lambda. Each run re-fetches the last 6 hours of finished periods and rewrites one file per period, so a run lost to an API outage is filled in by a later one, and values the API revises within 6 hours are picked up. Periods are only loaded once finished, so `intensity_actual` is populated.
 
 **History from:** 2018-06-01 (national); regional data available from May 2018.
 
@@ -71,9 +71,9 @@ Querying it: a full scan reads about 0.02 GB, roughly <$0.001 per query (Athena 
 
 ## Known issues & caveats
 
-- `intensity_actual` will be null for recently-written records. It is populated by the API with a lag of several hours; this table does not backfill it automatically. Use the bulk load to pull historical actuals.
+- `intensity_actual` is the API's figure up to 6 hours after the period ends; any later revisions aren't picked up. Re-run the bulk load for a date range to refresh it.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena, not `MAKE_DATE`.
-- Lambda and bulk load use different S3 key patterns (per-period filename vs. per-day filename). Both are readable via the same Glue table.
+- Lambda and bulk load use different S3 key patterns (per-period filename vs. per-day filename). Both are readable via the same Glue table. 2026-04-21 and 2026-04-22 have both kinds of file, so periods on those days appear twice; de-duplicate on `period_from`.
 
 ## Interested parties
 
