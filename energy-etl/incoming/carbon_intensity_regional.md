@@ -32,9 +32,9 @@ Open data, Creative Commons. No restrictions on use.
 
 | Field name | Type | Nullable | Key role | Description |
 |---|---|---|---|---|
-| period_from | string | No | | ISO 8601 UTC start of the half-hour period |
-| period_to | string | No | | ISO 8601 UTC end of the half-hour period |
-| region_id | int | No | Primary (with period_from) | Carbon Intensity API region ID (1–17) |
+| period_from | string | No | | UTC start of the half-hour period as `YYYY-MM-DD HH:MM` (e.g. `2024-03-15 12:00`) |
+| period_to | string | No | | UTC end of the half-hour period, same format |
+| region_id | int | No | Primary (with period_from) | Carbon Intensity API region ID: 1–14 DNO regions, 15 England, 16 Scotland, 17 Wales, 18 GB |
 | region_name | string | No | | Human-readable region name (e.g. `South West England`) |
 | dno_region | string | No | | DNO short name (e.g. `South Western`) |
 | intensity_forecast | int | No | | Forecast carbon intensity in gCO₂/kWh |
@@ -80,9 +80,9 @@ Querying it: a full scan reads about 0.97 GB, roughly $0.005 per query (Athena b
 
 - No `intensity_actual` field — regional data only provides forecast intensity, unlike national.
 - Percentage fields may not sum to exactly 100 due to rounding in the source API.
-- 2026-04-21 and 2026-04-22 have both a bulk-load day file and per-period files, so periods on those days appear twice; de-duplicate on `period_from` and `region_id`.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena.
 - Regional boundaries follow DNO zones, not administrative geography. Joining to local authority or postcode data requires a separate lookup.
+- Bulk loads before 2026-11-05 left the first days of each January empty, because the API cuts a range that crosses New Year short at 31 Dec 23:00. The loader now splits ranges at New Year and those days have been reloaded.
 
 ## Interested parties
 
@@ -91,4 +91,4 @@ Querying it: a full scan reads about 0.97 GB, roughly $0.005 per query (Athena b
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.carbon_intensity_regional`](../lake/carbon_intensity_regional.md) — use that for analysis.

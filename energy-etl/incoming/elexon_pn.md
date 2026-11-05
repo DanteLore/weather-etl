@@ -76,6 +76,7 @@ Querying it: a full scan reads about 0.95 GB, roughly $0.005 per query (Athena b
 - PNs are submitted before gate closure and may differ substantially from actual metered output after balancing instructions.
 - **The API does not expose PN revision history.** Each fetch returns the current snapshot at fetch time. The Lambda overwrites the file for each settlement date on every run. `ingested_at` records when the snapshot was taken, not when the PN was originally submitted to Elexon.
 - Partition columns are unpadded strings.
+- 13 days have no PN data because Elexon returns none for them: 2020-11-02, 2020-11-03, 2020-11-09, 2020-11-12, 2020-11-17 to 2020-11-19, 2020-11-29, 2020-11-30, 2021-02-18 and 2021-02-25 to 2021-02-27. BOD and BOALF have those days.
 
 ## Interested parties
 

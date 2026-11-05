@@ -40,6 +40,9 @@ One line per dataset. For full details, follow the link.
 
 | Dataset | Description |
 |---|---|
+| [lake.carbon_intensity_national](energy-etl/lake/carbon_intensity_national.md) | National carbon intensity (gCO₂/kWh), forecast and actual, one row per half-hour period, rebuilt nightly |
+| [lake.carbon_intensity_regional](energy-etl/lake/carbon_intensity_regional.md) | Regional carbon intensity forecast and generation mix, one row per period and region, rebuilt nightly |
+| [lake.carbon_intensity_generation](energy-etl/lake/carbon_intensity_generation.md) | National generation mix (%), including embedded wind and solar, one row per half-hour period, rebuilt nightly |
 | [lake.elexon_fuelhh](energy-etl/lake/elexon_fuelhh.md) | Half-hourly generation by fuel type (MW), one row per settlement period, rebuilt nightly |
 | [lake.elexon_system_prices](energy-etl/lake/elexon_system_prices.md) | System Buy/Sell Prices and imbalance volume, one row per settlement period, rebuilt nightly |
 | [lake.elexon_market_index](energy-etl/lake/elexon_market_index.md) | Wholesale power price per settlement period, volume-weighted across providers, rebuilt nightly |
