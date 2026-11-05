@@ -31,7 +31,7 @@ One line per dataset. For full details, follow the link.
 | [elexon_boalf](energy-etl/incoming/elexon_boalf.md) | Accepted balancing instructions (BOA Level File) per BM unit |
 | [elexon_pn](energy-etl/incoming/elexon_pn.md) | Physical Notifications — BM unit planned output profiles before gate closure |
 | [elexon_netbsad](energy-etl/incoming/elexon_netbsad.md) | Net Balancing Services Adjustment Data — price adjustments per settlement period |
-| [remit](energy-etl/incoming/remit.md) | REMIT outage notifications for UK generation and transmission assets (versioned) |
+| [remit](energy-etl/incoming/remit.md) | REMIT outage notifications for UK generation and transmission assets — every revision; use lake.remit for final state |
 | [repd](energy-etl/incoming/repd.md) | Renewable Energy Planning Database — all UK renewable/low-carbon projects and their status |
 | [natgas_sap](energy-etl/incoming/natgas_sap.md) | National Gas System Average Price (p/kWh) by gas day |
 | [eia_brent_crude](energy-etl/incoming/eia_brent_crude.md) | Europe Brent crude oil daily spot price (USD/barrel), weekdays only |
@@ -46,6 +46,7 @@ One line per dataset. For full details, follow the link.
 | [lake.elexon_netbsad](energy-etl/lake/elexon_netbsad.md) | Balancing services price adjustments, one row per settlement period, rebuilt nightly |
 | [lake.natgas_sap](energy-etl/lake/natgas_sap.md) | Gas System Average Price (p/kWh), one row per gas day, rebuilt nightly |
 | [lake.eia_brent_crude](energy-etl/lake/eia_brent_crude.md) | Brent crude spot price (USD/barrel), one row per trading day, rebuilt nightly |
+| [lake.remit](energy-etl/lake/remit.md) | REMIT outage notifications, final state — one row per outage from its last revision, rebuilt nightly |
 
 ## analytics-etl
 

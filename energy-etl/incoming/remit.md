@@ -32,14 +32,14 @@ Public disclosure data. No restrictions on use.
 
 | Field name | Type | Nullable | Key role | Description |
 |---|---|---|---|---|
-| mrid | string | No | Primary (with revision_number) | Stable message group ID — same across all revisions of one outage notification |
-| revision_number | int | No | Primary (with mrid) | Increments on each update; take max per mrid for current state |
+| mrid | string | No | | Message ID shared by the revisions of a notification. **Not unique per outage** — some participants reuse it for unrelated outages (see caveats) |
+| revision_number | int | No | | Revision of the notification. Usually increments, but some participants repeat or step back numbers (see caveats) |
 | publish_time | string | No | | UTC timestamp when this revision was published; use as a polling cursor |
 | created_time | string | Yes | | UTC timestamp when the original notification was first created |
-| message_type | string | Yes | | REMIT message type (e.g. `UnavailabilityOfGenerationUnit`) |
-| event_type | string | Yes | | Planned or unplanned |
-| unavailability_type | string | Yes | | Production unavailability, consumption unavailability, etc. |
-| event_status | string | Yes | | Active, Cancelled, etc. |
+| message_type | string | Yes | | `UnavailabilitiesOfElectricityFacilities` (outages) or `OtherMarketInformation` (non-outage notices, no capacity) |
+| event_type | string | Yes | | What is unavailable: `Production unavailability`, `Consumption unavailability`, `Transmission unavailability` or `Other unavailability` |
+| unavailability_type | string | Yes | | `Planned` or `Unplanned` |
+| event_status | string | Yes | | `Active`, `Inactive` (outage over) or `Dismissed` (notification withdrawn) |
 | participant_id | string | Yes | | Market participant EIC code |
 | asset_id | string | Yes | | Asset EIC code — maps to BM unit ID in `elexon_bod`/`elexon_boalf` |
 | asset_type | string | Yes | | Generation unit, interconnector, etc. |
@@ -70,7 +70,11 @@ Updated every 30 minutes. REMIT notifications can be published at any time; oper
 
 ## Known issues & caveats
 
-- **This table is append-only versioned.** Every update to an outage appends a new row with a higher `revision_number`. To get current outage state, always filter to `MAX(revision_number)` per `mrid`. Summing unavailable capacity without this deduplication will massively overcount.
+- **Use [`lake.remit`](../lake/remit.md) for current/final outage state.** This table stores every revision of every notification (820k rows for ~222k outages), so summing capacity here massively overcounts. Taking `MAX(revision_number)` per `mrid` is **not** enough, because (checked 2026-11-05):
+  - **The same revision is stored more than once** (12,610 revisions): the 30-minute poll overlaps by 5 minutes, the bulk load overlaps the Lambda, and Elexon sometimes republishes old revisions with a new `publish_time` (but the same `created_time`).
+  - **`mrid` is reused** by 3,298 message IDs for unrelated outages, each restarting at revision 1 (e.g. NGET restarting numbering, or placeholder IDs like `0000000000000001-ELXP-RMT-00000001` used for 18 different units).
+  - **Revision numbers are unreliable for some participants**, who repeat or step back numbers when updating (e.g. `48W00000THURB-3O-ELXP-RMT-10000056`: 63 updates, mostly re-using revision 2).
+  - `lake.remit` handles all three: see its entry for the rule.
 - `event_end_time` is null for open-ended outages (the operator does not know when the unit will return). Do not filter `WHERE event_end_time IS NOT NULL` — you will exclude active outages.
 - `asset_id` maps to BM unit IDs used in the Elexon tables, but the mapping is not exact — some REMIT assets cover multiple BM units. Use `affected_unit` for human-readable names.
 - `outage_profile` is a raw JSON string. Parse it at query time if you need segment-level capacity during complex nuclear outages.
@@ -84,4 +88,4 @@ Updated every 30 minutes. REMIT notifications can be published at any time; oper
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.remit`](../lake/remit.md) (final state per outage) — use that for analysis.

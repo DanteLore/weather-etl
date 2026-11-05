@@ -16,7 +16,7 @@ Elexon BMRS API       ──►  incoming.elexon_system_prices  ──►  lake.
                       ──►  incoming.elexon_bod            (Parquet)
                       ──►  incoming.elexon_boalf          (Parquet)
                       ──►  incoming.elexon_pn             (Parquet)
-                      ──►  incoming.remit
+                      ──►  incoming.remit                ──►  lake.remit
 
 DESNZ / gov.uk        ──►  incoming.repd
 
@@ -67,6 +67,7 @@ Rebuilt nightly at **07:00 UTC** by the `model_energy_data` Lambda, after the 06
 | [elexon_netbsad](lake/elexon_netbsad.md) | `lake.elexon_netbsad` | Balancing services price adjustments, one row per settlement period |
 | [natgas_sap](lake/natgas_sap.md) | `lake.natgas_sap` | Gas System Average Price (p/kWh), one row per gas day |
 | [eia_brent_crude](lake/eia_brent_crude.md) | `lake.eia_brent_crude` | Brent crude spot price (USD/barrel), one row per trading day |
+| [remit](lake/remit.md) | `lake.remit` | REMIT outages, final state — one row per outage from its last revision |
 
 ## Key things to know
 
@@ -75,4 +76,4 @@ Rebuilt nightly at **07:00 UTC** by the `model_energy_data` Lambda, after the 06
 - **Elexon settlement periods** run from local (Europe/London) midnight on the settlement date: 48 periods normally, 46 on the spring clock change day and 50 in the autumn. Period 1 starts at 00:00 UTC in winter and 23:00 UTC the previous day in summer.
 - **Incoming partitions use unpadded string year/month/day.** Use `DATE_PARSE(year \|\| '-' \|\| month \|\| '-' \|\| day, '%Y-%c-%e')` in Athena — `%c`/`%e` handle single-digit month and day. `MAKE_DATE` is not available in this Presto version.
 - **Prefer `elexon_fuelhh` over `carbon_intensity_generation`** for MW-level generation figures; use the carbon intensity tables for intensity index and percentage mix.
-- **REMIT records are versioned**: `(mrid, revision_number)` is the primary key. Always take the latest revision per mrid for current outage state.
+- **Use `lake.remit` for outage state, not `incoming.remit`.** Incoming holds every revision, and `MAX(revision_number)` per `mrid` is not a safe shortcut (mrids are reused, revision numbers repeat). In `lake.remit`, exclude `Dismissed` outages and filter by `event_start_ts`/`event_end_ts` for "current".
