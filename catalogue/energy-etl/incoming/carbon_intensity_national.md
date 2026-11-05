@@ -35,8 +35,8 @@ S3 key pattern (bulk load, per-day): `carbon_intensity/national/year={Y}/month={
 
 | Field name | Type | Nullable | Key role | Description |
 |---|---|---|---|---|
-| period_from | string | No | | ISO 8601 UTC start of the half-hour period (e.g. `2024-03-15T12:00Z`) |
-| period_to | string | No | | ISO 8601 UTC end of the half-hour period |
+| period_from | string | No | | UTC start of the half-hour period as `YYYY-MM-DD HH:MM` (e.g. `2024-03-15 12:00`) |
+| period_to | string | No | | UTC end of the half-hour period, same format |
 | intensity_forecast | int | No | | Forecast carbon intensity in gCO₂/kWh, published at the start of the period |
 | intensity_actual | int | Yes | | Actual carbon intensity in gCO₂/kWh; null until published, typically a few hours after period end |
 | intensity_index | string | No | | Qualitative label: `very low`, `low`, `moderate`, `high`, `very high` |
@@ -52,7 +52,7 @@ S3 key pattern (bulk load, per-day): `carbon_intensity/national/year={Y}/month={
 
 Written every 30 minutes by Lambda. Each run re-fetches the last 6 hours of finished periods and rewrites one file per period, so a run lost to an API outage is filled in by a later one, and values the API revises within 6 hours are picked up. Periods are only loaded once finished, so `intensity_actual` is populated.
 
-**History from:** 2018-06-01 (national); regional data available from May 2018.
+**History from:** 2018-01-01 (national); regional from 2018-05-10.
 
 ## Running costs (estimated)
 
@@ -73,7 +73,7 @@ Querying it: a full scan reads about 0.02 GB, roughly <$0.001 per query (Athena 
 
 - `intensity_actual` is the API's figure up to 6 hours after the period ends; any later revisions aren't picked up. Re-run the bulk load for a date range to refresh it.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena, not `MAKE_DATE`.
-- Lambda and bulk load use different S3 key patterns (per-period filename vs. per-day filename). Both are readable via the same Glue table. 2026-04-21 and 2026-04-22 have both kinds of file, so periods on those days appear twice; de-duplicate on `period_from`.
+- Lambda and bulk load use different S3 key patterns (per-period filename vs. per-day filename). Both are readable via the same Glue table. Some days have both kinds of file, so a period can appear twice; [`lake.carbon_intensity_national`](../lake/carbon_intensity_national.md) de-duplicates.
 
 ## Interested parties
 
@@ -82,4 +82,4 @@ Querying it: a full scan reads about 0.02 GB, roughly <$0.001 per query (Athena 
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.carbon_intensity_national`](../lake/carbon_intensity_national.md) — use that for analysis.

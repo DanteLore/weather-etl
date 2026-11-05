@@ -5,9 +5,9 @@ Datasets produced by the [energy-etl](https://github.com/DanteLore/energy-etl) p
 ## How data flows
 
 ```
-Carbon Intensity API  ──►  incoming.carbon_intensity_national
-                      ──►  incoming.carbon_intensity_regional
-                      ──►  incoming.carbon_intensity_generation
+Carbon Intensity API  ──►  incoming.carbon_intensity_national    ──►  lake.carbon_intensity_national
+                      ──►  incoming.carbon_intensity_regional    ──►  lake.carbon_intensity_regional
+                      ──►  incoming.carbon_intensity_generation  ──►  lake.carbon_intensity_generation
 
 Elexon BMRS API       ──►  incoming.elexon_system_prices  ──►  lake.elexon_system_prices
                       ──►  incoming.elexon_market_index   ──►  lake.elexon_market_index
@@ -61,6 +61,9 @@ Rebuilt nightly at **07:00 UTC** by the `model_energy_data` Lambda, after the 06
 
 | Dataset | Table | Description |
 |---|---|---|
+| [carbon_intensity_national](lake/carbon_intensity_national.md) | `lake.carbon_intensity_national` | National carbon intensity (gCO₂/kWh), forecast and actual, one row per half-hour period |
+| [carbon_intensity_regional](lake/carbon_intensity_regional.md) | `lake.carbon_intensity_regional` | Regional carbon intensity forecast and generation mix, one row per half-hour period and region |
+| [carbon_intensity_generation](lake/carbon_intensity_generation.md) | `lake.carbon_intensity_generation` | National generation mix (%), including embedded wind and solar, one row per half-hour period |
 | [elexon_fuelhh](lake/elexon_fuelhh.md) | `lake.elexon_fuelhh` | Half-hourly generation by fuel type (MW), one row per settlement period |
 | [elexon_system_prices](lake/elexon_system_prices.md) | `lake.elexon_system_prices` | System Buy/Sell Prices and imbalance volume, one row per settlement period |
 | [elexon_market_index](lake/elexon_market_index.md) | `lake.elexon_market_index` | Wholesale power price per settlement period, volume-weighted across APX and N2EX |
@@ -72,7 +75,7 @@ Rebuilt nightly at **07:00 UTC** by the `model_energy_data` Lambda, after the 06
 ## Key things to know
 
 - **Prefer `lake` over `incoming`** wherever a lake table exists.
-- **Join Elexon lake tables on `period_start_ts`** (UTC). It is unique per settlement period and avoids clock-change confusion.
+- **Join Elexon and carbon intensity lake tables on `period_start_ts`** (UTC). It is unique per settlement period and avoids clock-change confusion.
 - **Elexon settlement periods** run from local (Europe/London) midnight on the settlement date: 48 periods normally, 46 on the spring clock change day and 50 in the autumn. Period 1 starts at 00:00 UTC in winter and 23:00 UTC the previous day in summer.
 - **Incoming partitions use unpadded string year/month/day.** Use `DATE_PARSE(year \|\| '-' \|\| month \|\| '-' \|\| day, '%Y-%c-%e')` in Athena — `%c`/`%e` handle single-digit month and day. `MAKE_DATE` is not available in this Presto version.
 - **Prefer `elexon_fuelhh` over `carbon_intensity_generation`** for MW-level generation figures; use the carbon intensity tables for intensity index and percentage mix.

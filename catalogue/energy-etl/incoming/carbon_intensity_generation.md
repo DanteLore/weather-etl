@@ -31,8 +31,8 @@ Open data, Creative Commons. No restrictions on use.
 
 | Field name | Type | Nullable | Key role | Description |
 |---|---|---|---|---|
-| period_from | string | No | Primary | ISO 8601 UTC start of the half-hour period |
-| period_to | string | No | | ISO 8601 UTC end of the half-hour period |
+| period_from | string | No | Primary | UTC start of the half-hour period as `YYYY-MM-DD HH:MM` (e.g. `2024-03-15 12:00`) |
+| period_to | string | No | | UTC end of the half-hour period, same format |
 | pct_gas | double | Yes | | Gas generation share (%) |
 | pct_coal | double | Yes | | Coal generation share (%) |
 | pct_wind | double | Yes | | Wind generation share (%) — includes embedded/distributed generation |
@@ -74,9 +74,9 @@ Querying it: a full scan reads about 0.03 GB, roughly <$0.001 per query (Athena 
 - Percentage figures include ESO estimates for embedded (behind-the-meter) wind and solar (rooftop solar, small wind farms below the transmission threshold). `elexon_fuelhh` covers metered transmission-connected plant only — wind and solar will be understated there, particularly in summer. The two datasets are **not directly comparable**.
 - **Do not average regional carbon intensity percentages** to get a national figure — regions are different sizes and an unweighted average gives wrong results. This table (`carbon_intensity_generation`) is already the correct national aggregate.
 - Percentages may not sum to exactly 100 due to rounding.
-- 2026-04-21 and 2026-04-22 have both a bulk-load day file and per-period files, so periods on those days appear twice; de-duplicate on `period_from`.
 - Partition columns are unpadded strings. Use `DATE_PARSE(year || '-' || month || '-' || day, '%Y-%c-%e')` in Athena.
 - For absolute MW generation figures with individual interconnector breakdown, use `incoming.elexon_fuelhh`.
+- Bulk loads before 2026-11-05 left the first days of each January empty, because the API cuts a range that crosses New Year short at 31 Dec 23:00. The loader now splits ranges at New Year and those days have been reloaded.
 
 ## Interested parties
 
@@ -85,4 +85,4 @@ Querying it: a full scan reads about 0.03 GB, roughly <$0.001 per query (Athena 
 
 ## Status
 
-Active.
+Active. Modelled into [`lake.carbon_intensity_generation`](../lake/carbon_intensity_generation.md) — use that for analysis.

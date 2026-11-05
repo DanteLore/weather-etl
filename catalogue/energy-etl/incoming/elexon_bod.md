@@ -39,8 +39,8 @@ Elexon open data licence. Free to use; attribution to Elexon preferred. No restr
 | pair_id | int | No | Primary (composite) | Bid-offer pair index within the unit's stack |
 | time_from | string | No | | ISO 8601 UTC start of the level-pair's validity window |
 | time_to | string | No | | ISO 8601 UTC end of the level-pair's validity window |
-| level_from | double | No | | MW output at the start of the pair window |
-| level_to | double | No | | MW output at the end of the pair window |
+| level_from | bigint | No | | MW output at the start of the pair window (whole MW) |
+| level_to | bigint | No | | MW output at the end of the pair window (whole MW) |
 | bid_price | double | Yes | | Price (£/MWh) the unit will accept to reduce output (negative = the unit pays to reduce) |
 | offer_price | double | Yes | | Price (£/MWh) the unit requires to increase output |
 | year | string | No | Partition | Unpadded year |
@@ -78,6 +78,8 @@ Querying it: a full scan reads about 1.49 GB, roughly $0.007 per query (Athena b
 - `bid_price` can be negative — some units pay for the right to reduce output (e.g. must-run plant).
 - BOD is submitted before the gate closure; units may revise submissions up to gate closure. Only the final submission is stored here.
 - Partition columns are unpadded strings.
+- Prices of ±9999 £/MWh are Elexon's placeholder for "not offering in this direction" (about 12% of rows in Oct 2026), not real prices. Exclude them before averaging. Levels of ±9999 MW occur rarely too (about 0.02% of rows).
+- Before 2026-11-05 the Glue table declared the levels as `double` while every file stored them as int64, so queries failed with `HIVE_BAD_DATA`. Fixed by declaring them `bigint`; the loader now writes a fixed schema.
 
 ## Interested parties
 
