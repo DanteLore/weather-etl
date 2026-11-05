@@ -73,7 +73,7 @@ Querying it: a full scan reads about 7 MB per year of data, roughly $0.00005 per
 
 ## Known issues & caveats
 
-- **Newbury line only.** `serviceMetrics` is very slow (35–100 s for about 40 trains) and gives a 504 after about 2 minutes on Reading–Paddington (about 250 trains a day each way), so those trains aren't loaded. Trains between Newbury and Paddington are included with all their stops; use `lake.rtt_services` for trains that only run Reading–Paddington.
+- **Newbury line only.** `serviceMetrics` takes 1 to 2 seconds per train and gives a 504 after about 2 minutes. A whole day of Newbury–Reading (about 40 trains each way) sometimes hit that limit, so each day is queried in seven time windows, which returned exactly the same trains in a test on 2026-10-27. Reading–Paddington (about 250 trains a day each way) timed out as a whole day and isn't loaded. Trains between Newbury and Paddington are included with all their stops; use `lake.rtt_services` for trains that only run Reading–Paddington.
 - **The gateway blocks the default `python-requests` User-Agent** with a bare HTML 403, so the client sends its own. A 401 means a bad or missing key.
 - **No published rate limit.** Users report 1 request a second, with 429s above that, and the client stays below it. A contributor to the Open Rail Data forum says "HSP was never designed for bulk scraping", which is why the backfill runs hourly.
 - **Frequent short failures.** 429s and 503s are common, and 503s were much more frequent from Lambda than from a laptop on 2026-11-05. The client retries each request up to four times over about 2.5 minutes. A run that still fails, or runs out of time, loses only the day in progress and shows in the Lambda error metric.
