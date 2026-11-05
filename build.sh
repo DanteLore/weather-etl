@@ -13,6 +13,7 @@ aws sts get-caller-identity > /dev/null || { echo "AWS login expired: aws sso lo
 
 # API keys are git-ignored and get bundled into the Lambda zips, so never build without them
 [ -f datahub_etl/api_key.py ] || { echo "Missing datahub_etl/api_key.py: Met Office DataHub key (template: datahub_etl/api_key.example.py)"; exit 1; }
+if cmp -s datahub_etl/api_key.py datahub_etl/api_key.example.py; then echo "datahub_etl/api_key.py is still the template: add the real Met Office DataHub key"; exit 1; fi
 
 if [ ! -d .venv ]; then
     echo "Creating Python venv..."
