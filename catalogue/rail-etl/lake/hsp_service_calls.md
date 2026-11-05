@@ -90,6 +90,7 @@ Querying it: a full scan reads under 10 MB, roughly $0.00005 per query (Athena b
 
 - **Times are UK local time.** Timestamps are worked out from the clock times, so lateness on the night the clocks change isn't affected, but elapsed time across that change is an hour out.
 - **Reason codes have no text yet.** The descriptions are in the Darwin reference data, which isn't loaded.
+- **`is_cancelled` is an inference.** HSP has no cancellation flag, and blank actual times can also mean the train wasn't reported or was diverted. Requiring a reason code as well reduces that risk but doesn't remove it. An experienced Open Rail Data contributor also warned in December 2025 that HSP may not be "sufficiently accurate", and that a train missing from HSP may just not have reached it. Compare with `lake.rtt_services` before relying on exact counts.
 - **A reason code doesn't always mean a cancellation.** It's also given for delays, on stops where the train still ran.
 - **Disagreement with RTT.** On 2026-11-04, RTT marked 8 stops as cancelled at Aldermaston, Midgham and Theale where HSP has actual times. Which is right isn't known.
 - Newbury-line trains only; see [`incoming.hsp_service_calls`](../incoming/hsp_service_calls.md).
