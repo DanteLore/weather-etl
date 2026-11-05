@@ -71,7 +71,14 @@ One line per dataset. For full details, follow the link.
 |---|---|
 | [lake.rtt_service_calls](rail-etl/lake/rtt_service_calls.md) | One row per train call at a corridor station, typed and de-duplicated, rebuilt daily |
 | [lake.rtt_services](rail-etl/lake/rtt_services.md) | One row per corridor train per day: lateness, cancellations, on time / PPM, short formation, rebuilt daily |
-| [lake.orr_rail_performance](rail-etl/lake/orr_rail_performance.md) | ORR national benchmark: every performance number by period and operator, sector, region or route, rebuilt daily |
+| [lake.orr_operator_cancellations](rail-etl/lake/orr_operator_cancellations.md) | ORR trains planned and cancelled by operator per rail period, rebuilt daily |
+| [lake.orr_operator_punctuality](rail-etl/lake/orr_operator_punctuality.md) | ORR on time and "Time to N" at station stops by operator per rail period, rebuilt daily |
+| [lake.orr_operator_ppm](rail-etl/lake/orr_operator_ppm.md) | ORR Public Performance Measure by operator and sector per rail period, rebuilt daily |
+| [lake.orr_operator_passenger_lateness](rail-etl/lake/orr_operator_passenger_lateness.md) | ORR average passenger lateness by operator and sector per rail period, rebuilt daily |
+| [lake.orr_operator_delay_causes](rail-etl/lake/orr_operator_delay_causes.md) | ORR delay minutes by operator, responsibility and cause per rail period, rebuilt daily |
+| [lake.orr_sub_operator_performance](rail-etl/lake/orr_sub_operator_performance.md) | ORR right time, PPM and CaSL by sub-operator per rail period, rebuilt daily |
+| [lake.orr_severe_disruption_days](rail-etl/lake/orr_severe_disruption_days.md) | ORR days of severe disruption, GB and by sub-operator, rebuilt daily |
+| [lake.orr_network_rail_performance](rail-etl/lake/orr_network_rail_performance.md) | ORR cancellations, on time and delay per 1,000 train miles by Network Rail region and route, rebuilt daily |
 
 ## gov-etl
 
