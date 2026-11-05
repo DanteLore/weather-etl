@@ -8,7 +8,8 @@ source survey and rationale.
 
 ```
 Realtime Trains API  ──►  incoming.rtt_services          ──►  lake.rtt_service_calls  ──►  lake.rtt_services
-ORR Data Portal      ──►  incoming.orr_rail_performance  ──►  lake.orr_rail_performance
+ORR Data Portal      ──►  incoming.orr_rail_performance  ──►  lake.orr_operator_* , lake.orr_sub_operator_performance,
+                                                              lake.orr_severe_disruption_days, lake.orr_network_rail_performance
 ```
 
 ## incoming — raw landing zone
@@ -26,7 +27,14 @@ Rebuilt daily at 05:45 UTC by `model_rail_data`.
 |---|---|---|
 | [rtt_service_calls](lake/rtt_service_calls.md) | `lake.rtt_service_calls` | One row per train call at a corridor station: typed times, lateness, on time, cancellation, formation |
 | [rtt_services](lake/rtt_services.md) | `lake.rtt_services` | One row per train per day: direction, corridor origin and destination, lateness, cancellations, on time / PPM, short formation |
-| [orr_rail_performance](lake/orr_rail_performance.md) | `lake.orr_rail_performance` | National benchmark: every ORR performance number by period and operator, sector, region or route |
+| [orr_operator_cancellations](lake/orr_operator_cancellations.md) | `lake.orr_operator_cancellations` | ORR 3124: trains planned and cancelled by operator, with cancellation score by responsibility |
+| [orr_operator_punctuality](lake/orr_operator_punctuality.md) | `lake.orr_operator_punctuality` | ORR 3138: on time and "Time to N" at station stops by operator |
+| [orr_operator_ppm](lake/orr_operator_ppm.md) | `lake.orr_operator_ppm` | ORR 3114a/b: Public Performance Measure by operator and sector |
+| [orr_operator_passenger_lateness](lake/orr_operator_passenger_lateness.md) | `lake.orr_operator_passenger_lateness` | ORR 3144a/b: average passenger lateness by operator and sector, from 2010 |
+| [orr_operator_delay_causes](lake/orr_operator_delay_causes.md) | `lake.orr_operator_delay_causes` | ORR 3184: delay minutes by operator, responsibility and cause |
+| [orr_sub_operator_performance](lake/orr_sub_operator_performance.md) | `lake.orr_sub_operator_performance` | ORR 3167: right time, PPM and CaSL by sub-operator (paused by ORR at 2025-26) |
+| [orr_severe_disruption_days](lake/orr_severe_disruption_days.md) | `lake.orr_severe_disruption_days` | ORR 3157a/b: days of severe disruption, GB and by sub-operator |
+| [orr_network_rail_performance](lake/orr_network_rail_performance.md) | `lake.orr_network_rail_performance` | ORR 3121/3122, 3131/3132, 3181/3182: cancellations, on time and delay per 1,000 train miles by NR region and route |
 
 **Not built yet:** HSP (Historic Service Performance), which needs a free Rail Data Marketplace account. Network Rail TRUST and Darwin streaming feeds are deferred.
 
@@ -50,13 +58,13 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | [orr_rail_performance](incoming/orr_rail_performance.md) | incoming | $0.01 |
 | [rtt_service_calls](lake/rtt_service_calls.md) | lake | $0.003 |
 | [rtt_services](lake/rtt_services.md) | lake | $0.002 |
-| [orr_rail_performance](lake/orr_rail_performance.md) | lake | $0.002 |
-| **Total** | | **$0.02** |
+| ORR lake tables (8, see above) | lake | $0.016 |
+| **Total** | | **$0.03** |
 
 | Lambda | Memory | Runs / 30 days | Avg duration | Errors / 30 days | Est. $/month (compute + logs) |
 |---|---|---|---|---|---|
 | `load_rtt_data` | 128 MB | 32 | 10.5 s | 3 | $0.001 |
 | `load_orr_data` | 512 MB | 30 (expected; new 2026-11-05) | 40 s | 0 | $0.010 |
-| `model_rail_data` | 128 MB | 30 (expected; new 2026-11-05) | 15 s | 0 | $0.001 |
+| `model_rail_data` | 128 MB | 30 (expected; new 2026-11-05) | 34 s | 0 | $0.002 |
 
 The 3 `load_rtt_data` errors are one failed run, plus Lambda's two automatic retries, on 2026-10-26. It was loading 2026-10-25, the 25-hour day when the clocks went back. The fix was deployed on 2026-11-05 and the day reloaded (see [rtt_services](incoming/rtt_services.md)).

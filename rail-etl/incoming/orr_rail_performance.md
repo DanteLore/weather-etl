@@ -4,7 +4,18 @@
 
 Every passenger rail performance table that the Office of Rail and Road (ORR) Data Portal publishes as data, 20 tables in all. They cover PPM, cancellations, on-time and "Time to N" punctuality at station stops, average passenger lateness, days of severe disruption and delay minutes by cause. Each table is broken down by operator, sector, Network Rail region or route, or sub-operator, for every four-week rail period from 2010, 2014 or 2019, depending on the table. This is the national benchmark for comparing the corridor data in `rtt_services`.
 
-Each table is stored as one row per source cell, so tables with different shapes share one schema. Use [`lake.orr_rail_performance`](../lake/orr_rail_performance.md) for analysis: it parses the periods, entities and measures and keeps only the latest release.
+Each table is stored as one row per source cell, so tables with different shapes share one schema. For analysis use the lake tables, which keep only the latest release and have one named column per measure:
+
+| Lake table | ORR tables |
+|---|---|
+| [`lake.orr_operator_cancellations`](../lake/orr_operator_cancellations.md) | 3124 |
+| [`lake.orr_operator_punctuality`](../lake/orr_operator_punctuality.md) | 3138 |
+| [`lake.orr_operator_ppm`](../lake/orr_operator_ppm.md) | 3114a, 3114b |
+| [`lake.orr_operator_passenger_lateness`](../lake/orr_operator_passenger_lateness.md) | 3144a, 3144b |
+| [`lake.orr_operator_delay_causes`](../lake/orr_operator_delay_causes.md) | 3184 |
+| [`lake.orr_sub_operator_performance`](../lake/orr_sub_operator_performance.md) | 3167 |
+| [`lake.orr_severe_disruption_days`](../lake/orr_severe_disruption_days.md) | 3157a, 3157b |
+| [`lake.orr_network_rail_performance`](../lake/orr_network_rail_performance.md) | 3121, 3122, 3131, 3132, 3181a–c, 3182b–c |
 
 ## Classification
 
@@ -92,7 +103,7 @@ Querying it: a full scan reads about 1 MB, which Athena bills as its 10 MB minim
 - **3167 is paused by ORR.** The page says: "we have paused updates to Table 3167 whilst we review its content". Data stops at 2025-26 P13.
 - **3144a/b carry placeholder rows** for future periods of the current year, with every value `[z]`.
 - **Operator naming varies between tables**, e.g. `Lumo (East Coast)` in 3124 but `Lumo East Coast` in 3114a. Operators also change over the history (e.g. `Govia Thameslink Railway` and `Greater Thameslink Railway`).
-- **3182a and 3182c can have identical values** in some periods (total and operator-attributable delay per 1,000 train miles by route). That is how ORR publishes them, not a load error.
+- **3182a (total delay per 1,000 train miles by route) repeats 3182c (operator-attributable)** in every cell, as published on 2026-11-05. It's kept here as published; `lake.orr_network_rail_performance` derives the route total from 3182b + 3182c.
 - Snapshots are compared by parsed content, so a cosmetic page change (styling, text above the table) doesn't create a new snapshot.
 
 ## Interested parties
