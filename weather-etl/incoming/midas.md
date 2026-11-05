@@ -83,6 +83,17 @@ Open Government Licence v3.0 via CEDA. Free to use with attribution. Registratio
 
 Bulk-loaded once in January 2022 from the CEDA 202107 dataset release. Covers observations from 1875 through end of 2020. Not automatically updated and no further updates are planned.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [weather-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 2.695 GB, 32,219 objects | $0.062 |
+| **Total** | | **$0.062** |
+
+Querying it: a full scan reads about 2.69 GB, roughly $0.013 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - The CEDA source files use a non-standard format: CSV data is embedded between `data` / `end data` markers with metadata headers above. The ETL parses this custom format.

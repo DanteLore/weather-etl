@@ -130,6 +130,17 @@ Series IDs: `l522` (CPI index), `d7g7` (CPI rate), `l55o` (CPIH index), `d7bt` (
 ONS publish updated figures monthly, typically on the third Wednesday. Re-run the loader
 to append the latest month. The file is replaced in full on each run.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.000 GB, 1 objects | <$0.001 |
+| **Total** | | **<$0.001** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - Series start dates vary: RPI from Jun 1948, CPI/CPIH from Jan 1988/1989. Earlier months

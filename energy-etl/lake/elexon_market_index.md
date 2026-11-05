@@ -51,6 +51,21 @@ SQL summary: de-duplicates per `(settlement_date, settlement_period, data_provid
 
 Full rebuild every night at 07:00 UTC by `model_energy_data`: the S3 folder is deleted and the whole table rewritten from `incoming.elexon_market_index`. Incoming is updated every 30 minutes. The rebuild takes about 30 seconds for all energy lake tables; queries at 07:00 UTC may briefly see an empty table.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.003 GB, 5 objects | <$0.001 |
+| Lambda `model_energy_data` (5% share) | 30 rebuilds/month | <$0.001 |
+| Athena (rebuild) | 30 × 73 MB scanned of `incoming.elexon_market_index` | $0.011 |
+| S3 reads (rebuild) | 30 × 2,501 objects | $0.030 |
+| CloudWatch Logs | Lambda log ingestion | $0 |
+| **Total** | | **$0.041** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - **N2EX is effectively absent:** 117,754 of its 118,081 rows report zero volume and a zero price, so `market_price` is in practice the APX price. Never take an unweighted mean of the provider prices.

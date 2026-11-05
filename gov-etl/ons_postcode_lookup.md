@@ -133,6 +133,17 @@ Loaded on demand; no automatic refresh. The ONS releases updated boundary
 lookups periodically - check ONS Open Geography Portal for new versions before
 relying on this for anything boundary-sensitive.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.019 GB, 107 objects | <$0.001 |
+| **Total** | | **<$0.001** |
+
+Querying it: a full scan reads about 0.02 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - England and Wales only - no Scotland or Northern Ireland postcodes.

@@ -68,6 +68,21 @@ Updated every 30 minutes. REMIT notifications can be published at any time; oper
 
 **History from:** 2017-06-28 (when REMIT reporting began in GB).
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.978 GB, 11,564 objects | $0.022 |
+| Lambda `load_remit_data` | 1,440 runs × 4.0 s × 128 MB | $0.012 |
+| S3 writes | ~1,440 files + 1,094 partition-DDL result files | $0.018 |
+| Athena (loader) | 1,094 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | $0.001 |
+| **Total** | | **$0.054** |
+
+Querying it: a full scan reads about 0.98 GB, roughly $0.005 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - **Use [`lake.remit`](../lake/remit.md) for current/final outage state.** This table stores every revision of every notification (820k rows for ~222k outages), so summing capacity here massively overcounts. Taking `MAX(revision_number)` per `mrid` is **not** enough, because (checked 2026-11-05):

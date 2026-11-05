@@ -53,6 +53,21 @@ SQL summary: one row per `(settlement_date, settlement_period)`, latest-written 
 
 Full rebuild every night at 07:00 UTC by `model_energy_data`: the S3 folder is deleted and the whole table rewritten from `incoming.elexon_netbsad`. Incoming is loaded daily at 06:00 UTC with the previous day's data. The rebuild takes about 30 seconds for all energy lake tables; queries at 07:00 UTC may briefly see an empty table.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.001 GB, 5 objects | <$0.001 |
+| Lambda `model_energy_data` (7% share) | 30 rebuilds/month | <$0.001 |
+| Athena (rebuild) | 30 × 99 MB scanned of `incoming.elexon_netbsad` | $0.015 |
+| S3 reads (rebuild) | 30 × 2,499 objects | $0.030 |
+| CloudWatch Logs | Lambda log ingestion | $0 |
+| **Total** | | **$0.045** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - Values are zero for most periods; non-zero only when balancing service costs apply.

@@ -74,18 +74,31 @@ periodically to pick up revised or newly published figures.
 
 ## Data summary (as loaded)
 
+Checked 2026-11-05. Earlier figures were double-counted: 66 stale per-year files from an unreleased version of the loader sat alongside the current file until they were deleted that day.
+
 | Metric | Value |
 |---|---|
-| Total rows | 140,184 |
-| Countries/regions | 262 |
+| Total rows | 69,960 |
+| Countries/regions | 265 by name (includes World Bank aggregates; 5 income groups have a blank `country_code`) |
 | Years covered | 1960–2025 |
 
 | Indicator | Rows | Non-null | Years |
 |---|---|---|---|
-| NY.GDP.MKTP.CD (GDP current US$) | 35,046 | 29,306 | 1960–2025 |
-| NY.GDP.MKTP.KD (GDP constant 2015 US$) | 35,046 | 28,801 | 1960–2025 |
-| NY.GDP.MKTP.PP.CD (GDP PPP current int'l $) | 35,046 | 17,223 | 1960–2025 |
-| NY.GDP.PCAP.CD (GDP per capita current US$) | 35,046 | 29,306 | 1960–2025 |
+| NY.GDP.MKTP.CD (GDP current US$) | 17,490 | 14,745 | 1960–2025 |
+| NY.GDP.MKTP.KD (GDP constant 2015 US$) | 17,490 | 14,495 | 1960–2025 |
+| NY.GDP.MKTP.PP.CD (GDP PPP current int'l $) | 17,490 | 8,712 | 1960–2025 |
+| NY.GDP.PCAP.CD (GDP per capita current US$) | 17,490 | 14,745 | 1960–2025 |
+
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.001 GB, 1 objects | <$0.001 |
+| **Total** | | **<$0.001** |
+
+Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
 
 ## Known issues & caveats
 
@@ -101,8 +114,13 @@ periodically to pick up revised or newly published figures.
 - `country_code`/`country_name` includes World Bank aggregate regions (e.g.
   "World", "European Union", income-group aggregates) alongside individual
   countries — filter on known ISO country codes if aggregates would skew
-  analysis. This is why "countries/regions" above (262) is higher than the
+  analysis. This is why "countries/regions" above (265) is higher than the
   ~217 actual sovereign states/territories with World Bank data.
+- The five income-group aggregates (`Low income`, `Lower middle income`,
+  `Upper middle income`, `High income`, `Not classified`) have a **blank
+  `country_code`**, so `(country_code, indicator_id, year)` is not unique
+  (1,056 colliding rows). Key on `country_name` instead, or exclude rows
+  with a blank code.
 
 ## Interested parties
 

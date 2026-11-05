@@ -63,6 +63,21 @@ Full table rebuild every night at 06:00 UTC by the `model_weather_data` Lambda (
 
 Because the rebuild reads all of `incoming.weather` every time, corrections to past incoming data will automatically propagate without any manual intervention.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [weather-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.078 GB, 960 objects | $0.002 |
+| Lambda `model_weather_data` (99% share) | 46 rebuilds/month | $0.006 |
+| Athena (rebuild) | 46 × 2,584 MB scanned of `incoming.weather` | $0.594 |
+| S3 reads (rebuild) | 46 × 7,734 objects | $0.142 |
+| CloudWatch Logs | Lambda log ingestion | $0.003 |
+| **Total** | | **$0.75** |
+
+Querying it: a full scan reads about 0.08 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - CHIVENOR July 2022: a run of implausible sub-−5°C readings is hard-filtered out in the rebuild SQL. The raw data is still present in `incoming.weather` if you need it.

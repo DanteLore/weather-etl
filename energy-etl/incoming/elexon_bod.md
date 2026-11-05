@@ -57,6 +57,21 @@ Updated daily at 06:00 UTC with the previous day's data. Approximately one day o
 
 **History from:** 2020-01-01. Typical volume: ~180,000 rows/day. Storage format is Parquet (Snappy) — ~900 KB/day vs ~50 MB if stored as NDJSON.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 1.492 GB, 2,498 objects | $0.034 |
+| Lambda `load_elexon_bod_data` | 31 runs × 11.9 s × 512 MB | $0.003 |
+| S3 writes | ~31 files + 31 partition-DDL result files | <$0.001 |
+| Athena (loader) | 31 `ADD PARTITION` statements — DDL is free | $0 |
+| CloudWatch Logs | Lambda log ingestion | <$0.001 |
+| **Total** | | **$0.038** |
+
+Querying it: a full scan reads about 1.49 GB, roughly $0.007 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - A single BM unit may submit multiple bid-offer pairs (stacked levels). Joining to `elexon_boalf` on `(settlement_date, settlement_period, bm_unit, pair_id)` gives the accepted subset.

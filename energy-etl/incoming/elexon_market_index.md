@@ -50,6 +50,22 @@ Elexon open data licence. Free to use; attribution to Elexon preferred. No restr
 
 Updated every 30 minutes. Multiple rows per period (one per data provider).
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.036 GB, 2,501 objects | $0.001 |
+| Lambda `load_elexon_wholesale_price_data` (½ share) | 1,440 runs × 11.3 s × 128 MB | $0.017 |
+| S3 writes | ~720 files + 2,869 partition-DDL result files | $0.032 |
+| Athena (loader) | 2,869 `ADD PARTITION` statements — DDL is free | $0 |
+| Athena (website charts) | `dantelore-charts` queries this table directly (~4 refreshes/month) (cost counted under carbon_intensity_regional, which dominates the scan) | $0 |
+| CloudWatch Logs | Lambda log ingestion | $0.001 |
+| **Total** | | **$0.051** |
+
+Querying it: a full scan reads about 0.04 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - There are typically two rows per settlement period (one each from N2EX and APX). Aggregating across providers requires a weighted average using the `volume` field, not a simple mean of `price`.

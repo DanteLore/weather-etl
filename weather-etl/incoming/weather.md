@@ -62,6 +62,22 @@ Met Office DataHub terms apply. Free tier available for non-commercial use. Chec
 
 Written every hour by the `load_weather_data` Lambda (CloudWatch `rate(1 hour)`). The DataHub API returns the last 24 hours of observations on each call, so a single missed run does not create a gap — the next run will backfill. In normal operation data is no more than ~1 hour stale.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [weather-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 2.608 GB, 7,734 objects | $0.060 |
+| Lambda `load_weather_data` | 720 runs × 8.6 s × 128 MB | $0.013 |
+| S3 writes | ~720 files + 720 partition-DDL result files | $0.011 |
+| Athena (loader) | 720 `ADD PARTITION` statements — DDL is free | $0 |
+| Athena (loader reads `lake.weather_stations`) | 708 queries, 0.01 GB scanned (measured, last 30 days) | $0.037 |
+| CloudWatch Logs | Lambda log ingestion | $0.001 |
+| **Total** | | **$0.12** |
+
+Querying it: a full scan reads about 2.61 GB, roughly $0.013 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - CHIVENOR station produced a run of implausible temperature readings in July 2022 (below −5°C). These are excluded in `lake.weather` but are present here in the raw table.

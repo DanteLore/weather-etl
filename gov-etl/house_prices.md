@@ -72,6 +72,17 @@ Bulk-loaded by year, manually triggered. Land Registry publishes monthly
 updates and a full annual file each year. There is no automatic refresh - run
 the script to pick up new years.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [gov-etl README](README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 1.617 GB, 32 objects | $0.037 |
+| **Total** | | **$0.037** |
+
+Querying it: a full scan reads about 1.62 GB, roughly $0.008 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - The source CSV files have no header row; column order is fixed per Land

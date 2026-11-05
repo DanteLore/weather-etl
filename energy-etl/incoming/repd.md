@@ -85,6 +85,17 @@ Updated quarterly (approximately January, April, July, October). There is no aut
 
 **History from:** First load: Q4 2025 (January 2026 release). Earlier quarters can be loaded from the DESNZ archive if needed.
 
+## Running costs (estimated)
+
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [energy-etl README](../README.md#running-costs).
+
+| Item | Basis | Est. $/month |
+|---|---|---|
+| S3 storage | 0.026 GB, 1 objects | $0.001 |
+| **Total** | | **$0.001** |
+
+Querying it: a full scan reads about 0.03 GB, roughly <$0.001 per query (Athena bills a 10 MB minimum).
+
 ## Known issues & caveats
 
 - **All columns are stored as strings.** Cast `installed_capacity_mwelec` and coordinate fields to numeric types at query time. Nulls, blank strings, and `-` values appear in numeric columns for early-stage projects.
