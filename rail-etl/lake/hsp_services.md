@@ -81,7 +81,7 @@ group by 1 order by 1
 
 Full rebuild daily at 05:45 UTC by `model_rail_data`, so it holds data up to yesterday.
 
-**History from:** filling back to about a year before 2026-11-05 at about one day an hour. The backfill should finish around 2026-11-20. Until then older days are missing, so check `min(service_date)`.
+**History from:** filling back to about a year before 2026-11-05 at about one day an hour. Lambda 503s are slowing this down (see the incoming table's caveats), so no end date is known. Until it finishes, older days are missing, so check `min(service_date)`.
 
 ## Running costs (estimated)
 
