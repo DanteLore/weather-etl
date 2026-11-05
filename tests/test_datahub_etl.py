@@ -181,6 +181,27 @@ class TestExtractObservations:
             if os.path.exists(output_file):
                 os.unlink(output_file)
 
+    @patch('datahub_etl.weather_etl.get_sites', return_value=[SAMPLE_SITE])
+    def test_extract_moves_404_site_to_back_of_queue(self, mock_get_sites):
+        """A station with no data should not block a batch slot every run, and should be looked up again"""
+        mock_client = Mock()
+        mock_client.get_observations.side_effect = Exception("404 Client Error: Not Found for url: .../gfxnj5")
+
+        output_file = tempfile.mktemp(suffix='.json')
+
+        try:
+            with patch('datahub_etl.weather_etl.load_geohash_cache') as mock_load:
+                with patch('datahub_etl.weather_etl.save_geohash_cache') as mock_save:
+                    mock_load.return_value = {"3005": {"geohash": "gfxnj5", "last_fetched": "2026-01-01T00:00:00Z"}}
+                    extract_observations_data(output_file, mock_client)
+
+            saved_cache = mock_save.call_args[0][0]
+            assert saved_cache["3005"]["geohash"] is None
+            assert saved_cache["3005"]["last_fetched"] > "2026-01-01T00:00:00Z"
+        finally:
+            if os.path.exists(output_file):
+                os.unlink(output_file)
+
 
 class TestTransformObservationsData:
     def test_transform_creates_newline_delimited_json(self):

@@ -136,6 +136,13 @@ def extract_observations_data(filename, client, s3_bucket=None, s3_cache_key=Non
                 if cache_entry.get("geohash"):
                     _update_cache_for_site(site["site_id"], cache_entry["geohash"], geohash_cache)
                     cache_updated = True
+            elif "404" in error_msg:
+                # Station has no observations (closed or offline). Send the site to the back of the
+                # queue so it doesn't take a batch slot every run, and drop the cached geohash so the
+                # next attempt looks up the nearest station again in case it has moved.
+                print(f"  No station data for {site['site_name']}, retrying with a fresh lookup next cycle")
+                _update_cache_for_site(site["site_id"], None, geohash_cache)
+                cache_updated = True
 
     if cache_updated:
         save_geohash_cache(geohash_cache, s3_bucket=s3_bucket, s3_key=s3_cache_key)
