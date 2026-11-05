@@ -99,6 +99,7 @@ Querying it: a full scan reads under 10 MB, roughly $0.00005 per query (Athena b
 
 ## Known issues & caveats
 
+- **`is_cancelled` is an inference.** HSP has no cancellation flag, and blank actual times can also mean the train wasn't reported or was diverted. Requiring a reason code as well reduces that risk but doesn't remove it. An experienced Open Rail Data contributor also warned in December 2025 that HSP may not be "sufficiently accurate", and that a train missing from HSP may just not have reached it. Compare with `lake.rtt_services` before relying on exact counts.
 - **PPM uses 5 minutes for every train.** Official PPM allows 10 minutes for long-distance services, such as GWR's West of England trains, so `is_ppm` is stricter than the official figure for those.
 - **Destination measures are at the true destination**, unlike `lake.rtt_services`, whose are at the last corridor station. A Paddington–Plymouth train's are at Plymouth; use `rdg_lateness_minutes` or `tha_lateness_minutes` for a local view.
 - **Reason codes have no text yet.** The descriptions are in the Darwin reference data, which isn't loaded.

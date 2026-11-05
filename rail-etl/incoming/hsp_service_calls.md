@@ -78,7 +78,7 @@ Querying it: a full scan reads about 7 MB per year of data, roughly $0.00005 per
 - **No published rate limit.** Users report 1 request a second, with 429s above that, and the client stays below it. A contributor to the Open Rail Data forum says "HSP was never designed for bulk scraping", which is why the backfill runs hourly.
 - **Frequent short failures.** 429s and 503s are common, and 503s were much more frequent from Lambda than from a laptop on 2026-11-05. The client retries each request up to four times over about 2.5 minutes. A run that still fails, or runs out of time, loses only the day in progress and shows in the Lambda error metric.
 - **Reason codes are numbers only.** The text is in the Darwin reference data, which isn't loaded yet.
-- A cancelled stop has no actual times, and has a reason code.
+- **HSP has no cancellation flag, and its accuracy is questioned.** Blank actual times "could mean anything - train not reported, train cancelled, or train diverted", and a train missing from HSP may just not have reached it, according to an experienced Open Rail Data contributor ([December 2025 thread](https://groups.google.com/g/openraildata-talk/c/8gV0y9-XDb4)). On 2026-11-04 every stop with no actual times also had a reason code.
 - **Agreement with RTT.** On 2026-11-04, joining on train ID, station and scheduled time, 539 of 546 lateness values were within a minute of RTT's. RTT marked 8 stops as cancelled at Aldermaston, Midgham and Theale where HSP has actual times, and HSP marked 1 cancelled where RTT has one. Which is right isn't known.
 - Times are `HHMM` with no date, so a train crossing midnight wraps around. The lake works out the full timestamps.
 
