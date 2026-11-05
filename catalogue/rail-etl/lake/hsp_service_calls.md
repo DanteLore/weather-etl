@@ -70,7 +70,7 @@ SQL summary: HSP gives bare `HHMM` times, so the SQL adds a day each time the ti
 
 Full rebuild daily at 05:45 UTC by `model_rail_data`, after the 04:30 HSP load, so it holds data up to yesterday.
 
-**History from:** filling back to about a year before 2026-11-05 at about one day an hour. The backfill should finish around 2026-11-20. Until then older days are missing, so check `min(service_date)`.
+**History from:** filling back to about a year before 2026-11-05 at about one day an hour. Lambda 503s are slowing this down (see the incoming table's caveats), so no end date is known. Until it finishes, older days are missing, so check `min(service_date)`.
 
 ## Running costs (estimated)
 
