@@ -1,12 +1,12 @@
-# RTT Service Performance (Newbury-Paddington corridor)
+# incoming.rtt_services — RTT Service Performance (Newbury-Paddington corridor)
 
 ## Description
 
 Per-service actual vs scheduled departure/arrival times, cancellation flag and
 train formation (vehicle count) for services calling at any of the stations on
 the GWR corridor between Newbury and London Paddington: Newbury (NBY), Newbury
-Racecourse (NRC), Midgham (MDG), Thatcham (THA), Theale (THE), Aldermaston
-(AMT), Reading West (RDW), Reading (RDG) and Paddington (PAD) - filtered to
+Racecourse (NRC), Thatcham (THA), Midgham (MDG), Aldermaston (AMT), Theale
+(THE), Reading West (RDW), Reading (RDG) and Paddington (PAD), west to east - filtered to
 services that call at more than one of these nine stations. Sourced from the
 Realtime Trains (RTT) Next Generation API. Use this to analyse GWR delays,
 cancellations and short-formation trains, including delay progression along
@@ -38,6 +38,8 @@ requires contacting RTT support for a separate agreement.
 - Glue: `incoming.rtt_services`
 - Format: Parquet, partitioned by `date` (the day the location query was run for)
 
+For analysis use the lake tables: [`lake.rtt_service_calls`](../lake/rtt_service_calls.md) (one row per call, de-duplicated, typed) and [`lake.rtt_services`](../lake/rtt_services.md) (one row per train).
+
 ## Field spec
 
 | Field name | Type | Nullable | Key role | Description |
@@ -55,6 +57,7 @@ requires contacting RTT support for a separate agreement.
 | number_of_vehicles | double | Yes | | Number of vehicles (coaches) in the formation at this station, null if not reported |
 | platform | string | Yes | | Actual platform used at this station |
 | stations_called | string | No | | Comma-separated subset of tracked stations this service called at (2 or more) |
+| call_type | string | Yes | | Which call `scheduled_time`/`actual_time`/`lateness_minutes` describe: `departure`, or `arrival` where the service has no departure here (it terminates). Null in files written before 2026-11-05 (loads from 2026-10-23 onwards were re-fetched with it) |
 | date | string | No | Partition key | Date the ETL ran the location query for |
 
 Note: `lateness_minutes` and `number_of_vehicles` are stored as `double`, not
@@ -88,12 +91,12 @@ this ETL first ran (2026-07-19), it is not a historical archive.
 
 ## Running costs (estimated)
 
-Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [rail-etl README](README.md#running-costs).
+Estimated monthly cost in USD at AWS eu-west-1 list prices, from measurements taken 2026-11-05: the S3 size of this table's location, plus the last 30 days of Lambda metrics and Athena query history. Excludes tax and the AWS free tier (which currently covers all Lambda usage). Method: [rail-etl README](../README.md#running-costs).
 
 | Item | Basis | Est. $/month |
 |---|---|---|
-| S3 storage | 0.003 GB, 116 objects | <$0.001 |
-| Lambda `load_rtt_data` | 32 runs × 10.5 s × 128 MB | $0.001 |
+| S3 storage | 0.003 GB, 117 objects | <$0.001 |
+| Lambda `load_rtt_data` | 32 runs × 10.5 s × 128 MB (each run makes twice as many API calls since 2026-11-05, so expect about 20 s) | $0.001 |
 | S3 writes | ~32 files + 29 partition-DDL result files | <$0.001 |
 | Athena (loader) | 29 `ADD PARTITION` statements — DDL is free | $0 |
 | CloudWatch Logs | Lambda log ingestion | <$0.001 |
@@ -138,9 +141,13 @@ Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena 
   fix would have been missing rows for some stations on multi-stop services;
   the full reload after the fix means this does not affect current data.
 
+- **The 25-hour day when the clocks go back.** Each station's day is fetched in two overlapping windows (00:00–12:30 and 12:00–23:59 local time), with calls returned by both kept once. Until 2026-11-05 the day was fetched in one 00:00–23:59 query, which the API rejects on the 25-hour day ("maximum query duration is 23h59m"). So the 2026-10-25 load failed, and that day was reloaded on 2026-11-05.
+- About 0.5% of rows have no `scheduled_time`: calls with no public time, such as unadvertised stops and some buses. The lake drops them.
+- A service can appear twice at one station (e.g. reversing at Newbury), with different scheduled times.
+
 ## Interested parties
 
-None yet - new dataset.
+None yet.
 
 ## Status
 

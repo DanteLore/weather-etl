@@ -58,11 +58,20 @@ One line per dataset. For full details, follow the link.
 | [incoming.webanalytics](analytics-etl/incoming/webanalytics.md) | Raw CloudFront access logs for dantelore.com — one row per HTTP request, tab-delimited, partitioned by year/month/day |
 | [lake.webanalytics](analytics-etl/lake/webanalytics.md) | Enriched web analytics with geolocation, user-agent parsing, bot detection and content flagging — the main analysis table |
 
-## rail-etl
+## rail-etl / incoming (raw)
 
 | Dataset | Description |
 |---|---|
-| [rtt_services](rail-etl/rtt_services.md) | RTT actual-vs-scheduled times, cancellations and formation for THA/RDG/PAD |
+| [incoming.rtt_services](rail-etl/incoming/rtt_services.md) | RTT actual-vs-scheduled times, cancellations and formation at the Newbury–Paddington corridor stations, daily |
+| [incoming.orr_rail_performance](rail-etl/incoming/orr_rail_performance.md) | The 20 ORR passenger rail performance tables, one row per cell, one snapshot per ORR release |
+
+## rail-etl / lake (modelled)
+
+| Dataset | Description |
+|---|---|
+| [lake.rtt_service_calls](rail-etl/lake/rtt_service_calls.md) | One row per train call at a corridor station, typed and de-duplicated, rebuilt daily |
+| [lake.rtt_services](rail-etl/lake/rtt_services.md) | One row per corridor train per day: lateness, cancellations, on time / PPM, short formation, rebuilt daily |
+| [lake.orr_rail_performance](rail-etl/lake/orr_rail_performance.md) | ORR national benchmark: every performance number by period and operator, sector, region or route, rebuilt daily |
 
 ## gov-etl
 
