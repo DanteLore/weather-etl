@@ -52,7 +52,7 @@ Open Government Licence v2.0 with National Rail Enquiries amendments, accepted w
 
 Every hour the Lambda lists the days already in S3, then loads yesterday if it's missing (from 04:00 UTC, so normally the 04:30 run), then the oldest missing days in HSP's 364-day window, starting a new day only if at least 10 minutes of the run remain. A day takes 3 to 8 minutes. So it backfills itself at about one day an hour and fills any gap left by a failed run. Once a day is loaded it isn't fetched again.
 
-**History from:** a rolling year. The backfill started on 2026-11-05. It takes about two weeks if each hourly run loads a day, and longer while Lambda is getting 503s. Days older than a year aren't deleted when they leave HSP's window, so history builds up from here.
+**History from:** a rolling year. The backfill started on 2026-11-05. The 503s cleared up on their own over the next few days: Lambda errors fell from 13 on the first day to 0 by 2026-11-09. By 2026-11-10 it was loading about 20 days a day, had loaded 99 days (2025-11-07 to 2026-02-07, and 2026-11-04 onwards) and should finish around 2026-11-23. Days older than a year aren't deleted when they leave HSP's window, so history builds up from here.
 
 ## Running costs (estimated)
 
