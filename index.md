@@ -65,6 +65,7 @@ One line per dataset. For full details, follow the link.
 | [incoming.rtt_services](rail-etl/incoming/rtt_services.md) | RTT actual-vs-scheduled times, cancellations and formation at the Newbury–Paddington corridor stations, daily |
 | [incoming.rtt_reasons](rail-etl/incoming/rtt_reasons.md) | RTT reason codes and text for corridor services with cancelled or terminated calls |
 | [incoming.nr_schedule_locations](rail-etl/incoming/nr_schedule_locations.md) | Network Rail timetable for corridor trains, including planned changes and buses, one snapshot a day |
+| [incoming.nr_delay_attribution](rail-etl/incoming/nr_delay_attribution.md) | Network Rail's attributed delays and cancellations to every GB passenger train, with cause and responsibility, plus glossary tables |
 | [incoming.hsp_service_calls](rail-etl/incoming/hsp_service_calls.md) | HSP times and reason codes at every stop of Newbury-line trains, with a rolling year of history |
 | [incoming.orr_rail_performance](rail-etl/incoming/orr_rail_performance.md) | The 20 ORR passenger rail performance tables, one row per cell, one snapshot per ORR release |
 
@@ -75,6 +76,7 @@ One line per dataset. For full details, follow the link.
 | [lake.rtt_service_calls](rail-etl/lake/rtt_service_calls.md) | One row per train call at a corridor station, typed and de-duplicated, rebuilt daily |
 | [lake.rtt_services](rail-etl/lake/rtt_services.md) | One row per corridor train per day: lateness, cancellations, on time / PPM, short formation, rebuilt daily |
 | [lake.nr_schedule_days](rail-etl/lake/nr_schedule_days.md) | Planned timetable changes per corridor train per day: cancelled, cut back, overlaid, new, bus, rebuilt daily |
+| [lake.nr_delay_attribution](rail-etl/lake/nr_delay_attribution.md) | Delays and cancellations to corridor trains by cause and responsibility (Network Rail / operator), from February 2026, rebuilt daily |
 | [lake.hsp_service_calls](rail-etl/lake/hsp_service_calls.md) | One row per stop of every Newbury-line train, with lateness, cancellations and reason codes, rebuilt daily |
 | [lake.hsp_services](rail-etl/lake/hsp_services.md) | One row per Newbury-line train per day across its whole journey, rebuilt daily |
 | [lake.orr_operator_cancellations](rail-etl/lake/orr_operator_cancellations.md) | ORR trains planned and cancelled by operator per rail period, rebuilt daily |
