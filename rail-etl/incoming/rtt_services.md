@@ -38,7 +38,7 @@ requires contacting RTT support for a separate agreement.
 - Glue: `incoming.rtt_services`
 - Format: Parquet, partitioned by `date` (the day the location query was run for)
 
-For analysis use the lake tables: [`lake.rtt_service_calls`](../lake/rtt_service_calls.md) (one row per call, de-duplicated, typed) and [`lake.rtt_services`](../lake/rtt_services.md) (one row per train).
+Reason text for cancelled calls is in [`incoming.rtt_reasons`](rtt_reasons.md). For analysis use the lake tables: [`lake.rtt_service_calls`](../lake/rtt_service_calls.md) (one row per call, de-duplicated, typed) and [`lake.rtt_services`](../lake/rtt_services.md) (one row per train).
 
 ## Field spec
 
@@ -57,7 +57,9 @@ For analysis use the lake tables: [`lake.rtt_service_calls`](../lake/rtt_service
 | number_of_vehicles | double | Yes | | Number of vehicles (coaches) in the formation at this station, null if not reported |
 | platform | string | Yes | | Actual platform used at this station |
 | stations_called | string | No | | Comma-separated subset of tracked stations this service called at (2 or more) |
-| call_type | string | Yes | | Which call `scheduled_time`/`actual_time`/`lateness_minutes` describe: `departure`, or `arrival` where the service has no departure here (it terminates). Null in files written before 2026-11-05 (loads from 2026-10-23 onwards were re-fetched with it) |
+| call_type | string | Yes | | Which call `scheduled_time`/`actual_time`/`lateness_minutes` describe: `departure`, or `arrival` where the service has no departure here or terminated short here (`display_as` = `TERMINATES`). Null in files written before 2026-11-05 (loads from 2026-10-23 onwards were re-fetched with it) |
+| display_as | string | Yes | | How RTT shows the call: `CALL`, `CANCELLED`, `TERMINATES` (the train ended here short of its planned destination; later calls are `CANCELLED`) or `STARTS` (it started here instead of its planned origin). Null before 2026-10-28 |
+| cancellation_reason_code | string | Yes | | TRUST delay attribution code for a cancelled call, or for a terminated call's cancelled onward departure, e.g. `ZW`, `TB`. Text in `incoming.rtt_reasons`. Null before 2026-10-28 |
 | date | string | No | Partition key | Date the ETL ran the location query for |
 
 Note: `lateness_minutes` and `number_of_vehicles` are stored as `double`, not
@@ -142,6 +144,7 @@ Querying it: a full scan reads about 0.00 GB, roughly <$0.001 per query (Athena 
   the full reload after the fix means this does not affect current data.
 
 - **The 25-hour day when the clocks go back.** Each station's day is fetched in two overlapping windows (00:00–12:30 and 12:00–23:59 local time), with calls returned by both kept once. Until 2026-11-05 the day was fetched in one 00:00–23:59 query, which the API rejects on the 25-hour day ("maximum query duration is 23h59m"). So the 2026-10-25 load failed, and that day was reloaded on 2026-11-05.
+- **Terminated-short calls use the arrival from 2026-10-28.** Before then, a train terminated short used its cancelled onward departure, so it showed as cancelled at the station where it actually ended. Data from 2026-10-28 onwards was re-fetched on 2026-11-10 with the fix.
 - About 0.5% of rows have no `scheduled_time`: calls with no public time, such as unadvertised stops and some buses. The lake drops them.
 - A service can appear twice at one station (e.g. reversing at Newbury), with different scheduled times.
 
