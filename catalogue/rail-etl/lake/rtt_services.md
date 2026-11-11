@@ -59,6 +59,10 @@ Realtime Trains free tier: personal and non-commercial use only, under RTT's [Te
 | max_vehicles | int | Yes | | Most vehicles at any tracked call |
 | typical_vehicles | int | Yes | | Median of `max_vehicles` over every day this `train_uid` ran. Null if fewer than 5 days have a formation |
 | is_short_formed | boolean | Yes | | `min_vehicles` is less than `typical_vehicles`: the train ran with fewer coaches than usual. Null when either is unknown |
+| terminated_short_at | string | Yes | | Corridor station where the train ended short of its planned destination (RTT `TERMINATES`); later calls are cancelled. Null if it didn't, or before 2026-10-28 |
+| started_short_at | string | Yes | | Corridor station where the train started instead of its planned origin (RTT `STARTS`). Null before 2026-10-28 |
+| cancellation_reason_code | string | Yes | | TRUST delay attribution code at the first cancelled or terminated corridor call, e.g. `ZW` (unknown cause), `IB` (points failure). Null before 2026-10-28 |
+| cancellation_reason_text | string | Yes | | RTT's text for that code, e.g. "the train operator's request" |
 
 ## Common queries
 
@@ -104,6 +108,9 @@ Querying it: a full scan reads about 2 MB, roughly $0.00005 per query (Athena bi
 ## Known issues & caveats
 
 - **Measured inside the corridor only.** Origin, destination and lateness are at the first and last *tracked* stations. A Paddington to Plymouth train that stops at Newbury has `corridor_destination` Newbury, so its lateness there is a departure lateness (see `destination_call_type`).
+- **Terminated and started short are only seen inside the corridor.** A train that ended before reaching the corridor shows as fully cancelled. RTT can also show `TERMINATES` at Paddington when a train planned to continue beyond it ends there.
+- **Planned changes aren't cancellations here.** A train removed or cut back in the timetable in advance doesn't appear, or appears with its changed calls. Join [`lake.nr_schedule_days`](nr_schedule_days.md) on `train_uid` and `departure_date = run_date` to see those (from 2026-11-10).
+- **Responsibility groups aren't available yet** (see [`incoming.rtt_reasons`](../incoming/rtt_reasons.md)).
 - **PPM uses 5 minutes for every service.** Official PPM allows 10 minutes for long-distance services, such as GWR's West of England trains through Newbury, so `is_ppm` is stricter than the official figure for those.
 - **Short-formed is relative to the train's own usual formation.** No source gives the planned formation (see BRIEF.md), so a train that always runs short won't be flagged. Formations change at timetable changes; `train_uid` usually changes too, which resets the comparison.
 - **No through trains between Thatcham and Paddington on Sundays.** There were none on any of the 17 Sundays loaded: Sunday trains from Newbury run to Reading only. This is the timetable, not missing data.

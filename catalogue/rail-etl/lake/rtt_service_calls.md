@@ -46,6 +46,8 @@ Realtime Trains free tier: personal and non-commercial use only, under RTT's [Te
 | actual_local_ts | timestamp | Yes | | Actual time, UK local time; null if not reported or cancelled |
 | lateness_minutes | int | Yes | | Whole minutes late against the public time; negative if early |
 | is_cancelled | boolean | No | | The call was cancelled |
+| display_as | string | Yes | | `CALL`, `CANCELLED`, `TERMINATES` (ended here short of its planned destination) or `STARTS` (started here instead of its planned origin). Null before 2026-10-28 |
+| cancellation_reason_code | string | Yes | | TRUST delay attribution code for a cancelled or terminated call, e.g. `ZW`. Null before 2026-10-28 |
 | is_on_time | boolean | Yes | | ORR's "on time": less than 1 minute late. False if cancelled; null if no actual was reported |
 | number_of_vehicles | int | Yes | | Vehicles (coaches) in the formation, where RTT has it |
 | platform | string | Yes | | Actual platform |
