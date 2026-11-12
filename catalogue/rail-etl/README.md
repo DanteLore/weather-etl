@@ -1,7 +1,9 @@
 # rail-etl datasets
 
 UK rail performance data: journey-level data for the GWR corridor from Newbury through Thatcham (THA)
-and Reading (RDG) to London Paddington (PAD), plus ORR's national statistics as a benchmark. See [BRIEF.md](https://github.com/DanteLore/rail-etl/blob/master/BRIEF.md) for the full
+and Reading (RDG) to London Paddington (PAD), plus ORR's national statistics as a benchmark. Also local buses in the
+Thatcham area (the A4 corridor from Newbury to Theale), from the Bus Open Data Service: timetables, live positions
+and punctuality. See [BRIEF.md](https://github.com/DanteLore/rail-etl/blob/master/BRIEF.md) for the full
 source survey and rationale.
 
 ## How data flows
@@ -14,6 +16,9 @@ NR delay attribution ──►  incoming.nr_delay_attribution  ──►  lake.n
   (RDM file transfer)       + incoming.nr_da_* (glossary)
 ORR Data Portal      ──►  incoming.orr_rail_performance  ──►  lake.orr_operator_* , lake.orr_sub_operator_performance,
                                                               lake.orr_severe_disruption_days, lake.orr_network_rail_performance
+BODS GTFS timetable  ──►  incoming.bods_gtfs_*           ──►  lake.bus_planned_calls ──┐
+BODS SIRI-VM (1/min) ──►  incoming.bods_vehicle_activity ──►  lake.bus_positions     ──┴►  lake.bus_service_calls
+                            (raw XML kept)
 ```
 
 ## incoming — raw landing zone
@@ -26,6 +31,8 @@ ORR Data Portal      ──►  incoming.orr_rail_performance  ──►  lake.o
 | [nr_delay_attribution](incoming/nr_delay_attribution.md) | `incoming.nr_delay_attribution` | Network Rail's attributed delays and cancellations to every GB passenger train, with cause and responsibility, plus the glossary tables `incoming.nr_da_*` | Checked daily, 05:10 UTC; a new period about every 4 weeks |
 | [hsp_service_calls](incoming/hsp_service_calls.md) | `incoming.hsp_service_calls` | HSP scheduled and actual times and reason codes at every stop of Newbury-line trains, with a rolling year of history | Hourly at :30 (yesterday, then filling any gaps) |
 | [orr_rail_performance](incoming/orr_rail_performance.md) | `incoming.orr_rail_performance` | The 20 ORR passenger rail performance tables, one row per cell, one snapshot per ORR release | Checked daily, 05:15 UTC; changes about every 4 weeks |
+| [bods_vehicle_activity](incoming/bods_vehicle_activity.md) | `incoming.bods_vehicle_activity` | Live positions of every bus in the Thatcham area, polled each minute from BODS SIRI-VM, with the raw XML kept | Every minute; parquet daily at 00:20 UTC |
+| [bods_gtfs](incoming/bods_gtfs.md) | `incoming.bods_gtfs_*` (7 tables) | BODS GTFS timetable for every bus journey calling in the Thatcham area, one snapshot a day | Daily, 05:15 UTC |
 
 ## lake — modelled tables
 
@@ -47,6 +54,9 @@ Rebuilt daily at 05:45 UTC by `model_rail_data`.
 | [orr_sub_operator_performance](lake/orr_sub_operator_performance.md) | `lake.orr_sub_operator_performance` | ORR 3167: right time, PPM and CaSL by sub-operator (paused by ORR at 2025-26) |
 | [orr_severe_disruption_days](lake/orr_severe_disruption_days.md) | `lake.orr_severe_disruption_days` | ORR 3157a/b: days of severe disruption, GB and by sub-operator |
 | [orr_network_rail_performance](lake/orr_network_rail_performance.md) | `lake.orr_network_rail_performance` | ORR 3121/3122, 3131/3132, 3181/3182: cancellations, on time and delay per 1,000 train miles by NR region and route |
+| [bus_planned_calls](lake/bus_planned_calls.md) | `lake.bus_planned_calls` | Bus timetable: one row per timetabled journey per stop in the Thatcham area per day |
+| [bus_positions](lake/bus_positions.md) | `lake.bus_positions` | Bus positions in the Thatcham area, one row per vehicle per reported position |
+| [bus_service_calls](lake/bus_service_calls.md) | `lake.bus_service_calls` | Timetabled bus calls with the time the bus passed, lateness and on time; the bus equivalent of rtt_service_calls |
 
 **Not built:** Network Rail TRUST and Darwin streaming feeds are deferred.
 
@@ -79,7 +89,14 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | [hsp_service_calls](lake/hsp_service_calls.md) | lake | $0.006 |
 | [hsp_services](lake/hsp_services.md) | lake | $0.002 |
 | ORR lake tables (8, see above) | lake | $0.016 |
-| **Total** | | **$0.14 now, about $0.27 after a year** |
+| [bods_vehicle_activity](incoming/bods_vehicle_activity.md) | incoming | About $2.60 ($2.33 of it the poller Lambda, covered by the free tier at present) |
+| [bods_gtfs](incoming/bods_gtfs.md) | incoming | About $0.04 |
+| [bus_planned_calls](lake/bus_planned_calls.md) | lake | $0.002 (about $0.02 after a year) |
+| [bus_positions](lake/bus_positions.md) | lake | $0.002 (about $0.06 after a year) |
+| [bus_service_calls](lake/bus_service_calls.md) | lake | $0.002 (about $0.03 after a year) |
+| **Total** | | **About $2.80 now, $3.05 after a year, at list price; about $0.45 and $0.70 while the free tier covers Lambda** |
+
+The bus poller is most of the cost: it downloads BODS's all-England snapshot every minute because no API key is needed for it. With a free BODS API key it could fetch just the area, cutting about $2.30 a month (see [bods_vehicle_activity](incoming/bods_vehicle_activity.md)).
 
 | Lambda | Memory | Runs / 30 days | Avg duration | Errors / 30 days | Est. $/month (compute + logs) |
 |---|---|---|---|---|---|
@@ -89,5 +106,8 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | `load_nr_delay_attribution_data` | 1,024 MB | 30 (expected; new 2026-11-11) | Under 1 s when there's nothing new; about 25 s per period loaded | 0 | <$0.001 |
 | `load_orr_data` | 512 MB | 30 (expected; new 2026-11-05) | 40 s | 0 | $0.010 |
 | `model_rail_data` | 128 MB | 30 (expected; new 2026-11-05) | 34 s | 0 | $0.002 |
+| `poll_bods_vehicles` | 512 MB | 43,200 (every minute; new 2026-11-12) | 6.4 s | 0 in the first two hours | $2.35 |
+| `compact_bods_vehicles` | 1,024 MB | 30 (expected; new 2026-11-12) | Not yet run | 0 | About $0.01 |
+| `load_bods_timetable` | 2,048 MB | 30 (expected; new 2026-11-12) | 34 s | 0 | $0.034 |
 
 The 3 `load_rtt_data` errors are one failed run, plus Lambda's two automatic retries, on 2026-10-26. It was loading 2026-10-25, the 25-hour day when the clocks went back. The fix was deployed on 2026-11-05 and the day reloaded (see [rtt_services](incoming/rtt_services.md)).

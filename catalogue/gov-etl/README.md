@@ -43,6 +43,17 @@ Coordinate columns are `x_coordinate` (easting) and `y_coordinate` (northing) in
 | [ea_lidar_1m](ea_lidar_1m.md) | `incoming.ea_lidar_1m_dtm` | 1m DTM elevation for England (selected areas — currently West Berkshire) |
 | [exchange_rates](exchange_rates.md) | `incoming.exchange_rates_frankfurter` | Daily ECB reference rates for 46 currencies vs EUR, 1999–present |
 | [world_bank_gdp](world_bank_gdp.md) | `incoming.world_bank_gdp` | World Bank GDP indicators for all countries, 1960 onwards |
+| [nomis_census_travel_method](nomis_census_travel_method.md) | `incoming.nomis_census_travel_method` | Census 2021 method of travel to work, by OA, LSOA, MSOA, local authority and ward |
+| [nomis_census_travel_distance](nomis_census_travel_distance.md) | `incoming.nomis_census_travel_distance` | Census 2021 distance travelled to work, same geographies |
+| [nomis_census_car_availability](nomis_census_car_availability.md) | `incoming.nomis_census_car_availability` | Census 2021 cars or vans per household, same geographies |
+| [nomis_census_commute_flows](nomis_census_commute_flows.md) | `incoming.nomis_census_commute_flows` | Census 2021 home-to-workplace flows between MSOAs and between local authorities |
+| [stats19](stats19.md) | `incoming.stats19_collisions`, `_vehicles`, `_casualties` | Every reported injury road collision in GB since 1979, with vehicles and casualties |
+| [traffic_census_raw_counts](traffic_census_raw_counts.md) | `incoming.traffic_census_raw_counts` | Hourly manual traffic counts by vehicle type on count days, 2000–present |
+| [naptan_stops](naptan_stops.md) | `incoming.naptan_stops` | Every public transport stop in GB (436k, incl. inactive) with location |
+| [dft_journey_times_lsoa](dft_journey_times_lsoa.md) | `incoming.dft_journey_times_lsoa` | Modelled travel times from each LSOA in England to key services (2019 edition, the latest) |
+| [dft_bus_statistics_la](dft_bus_statistics_la.md) | `incoming.dft_bus_statistics_la` | Local bus journeys, vehicle miles and punctuality by local authority, annual |
+| [webtris](webtris.md) | `incoming.webtris_counts`, `incoming.webtris_sites` | 15-minute traffic counts and speeds on the M4 (J12–J14) and A34 near Newbury, 2017 onwards |
+| [street_manager_permit_events](street_manager_permit_events.md) | `incoming.street_manager_permit_events` | Roadworks permit and works events in West Berkshire, July 2020 onwards |
 
 ## Running costs
 
@@ -77,4 +88,17 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | [nomis_census_industry](nomis_census_industry.md) | incoming | <$0.001 |
 | [nomis_census_occupation](nomis_census_occupation.md) | incoming | <$0.001 |
 | [ons_inflation](ons_inflation.md) | incoming | <$0.001 |
-| **Total** | | **$0.17** |
+| [stats19](stats19.md) | incoming | $0.038 |
+| [webtris](webtris.md) | incoming | $0.002 |
+| [traffic_census_raw_counts](traffic_census_raw_counts.md) | incoming | $0.002 |
+| [street_manager_permit_events](street_manager_permit_events.md) | incoming | $0.001 |
+| [naptan_stops](naptan_stops.md) | incoming | $0.001 |
+| [dft_journey_times_lsoa](dft_journey_times_lsoa.md) | incoming | $0.001 |
+| [nomis_census_travel_method](nomis_census_travel_method.md) | incoming | <$0.001 |
+| [nomis_census_travel_distance](nomis_census_travel_distance.md) | incoming | <$0.001 |
+| [nomis_census_car_availability](nomis_census_car_availability.md) | incoming | <$0.001 |
+| [nomis_census_commute_flows](nomis_census_commute_flows.md) | incoming | <$0.001 |
+| [dft_bus_statistics_la](dft_bus_statistics_la.md) | incoming | <$0.001 |
+| **Total** | | **$0.22** |
+
+The datasets added on 2026-11-12 (from `stats19` down) were measured that day.

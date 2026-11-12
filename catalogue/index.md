@@ -68,6 +68,8 @@ One line per dataset. For full details, follow the link.
 | [incoming.nr_delay_attribution](rail-etl/incoming/nr_delay_attribution.md) | Network Rail's attributed delays and cancellations to every GB passenger train, with cause and responsibility, plus glossary tables |
 | [incoming.hsp_service_calls](rail-etl/incoming/hsp_service_calls.md) | HSP times and reason codes at every stop of Newbury-line trains, with a rolling year of history |
 | [incoming.orr_rail_performance](rail-etl/incoming/orr_rail_performance.md) | The 20 ORR passenger rail performance tables, one row per cell, one snapshot per ORR release |
+| [incoming.bods_vehicle_activity](rail-etl/incoming/bods_vehicle_activity.md) | Live bus positions in the Thatcham area (Newbury to Theale), polled every minute from the Bus Open Data Service |
+| [incoming.bods_gtfs_*](rail-etl/incoming/bods_gtfs.md) | Bus timetables (GTFS) for every journey calling in the Thatcham area, one snapshot a day |
 
 ## rail-etl / lake (modelled)
 
@@ -87,6 +89,9 @@ One line per dataset. For full details, follow the link.
 | [lake.orr_sub_operator_performance](rail-etl/lake/orr_sub_operator_performance.md) | ORR right time, PPM and CaSL by sub-operator per rail period, rebuilt daily |
 | [lake.orr_severe_disruption_days](rail-etl/lake/orr_severe_disruption_days.md) | ORR days of severe disruption, GB and by sub-operator, rebuilt daily |
 | [lake.orr_network_rail_performance](rail-etl/lake/orr_network_rail_performance.md) | ORR cancellations, on time and delay per 1,000 train miles by Network Rail region and route, rebuilt daily |
+| [lake.bus_planned_calls](rail-etl/lake/bus_planned_calls.md) | Bus timetable by day: every timetabled journey at every stop in the Thatcham area, rebuilt daily |
+| [lake.bus_positions](rail-etl/lake/bus_positions.md) | Bus positions in the Thatcham area, de-duplicated, rebuilt daily |
+| [lake.bus_service_calls](rail-etl/lake/bus_service_calls.md) | Bus punctuality: timetabled calls in the Thatcham area with actual pass times and lateness, rebuilt daily |
 
 ## gov-etl
 
@@ -109,3 +114,14 @@ One line per dataset. For full details, follow the link.
 | [os_terrain_50](gov-etl/os_terrain_50.md) | 50m-resolution DTM elevation for all of Great Britain (~114M points) |
 | [ea_lidar_1m](gov-etl/ea_lidar_1m.md) | 1m-resolution bare-earth DTM for England — currently loaded for West Berkshire |
 | [world_bank_gdp](gov-etl/world_bank_gdp.md) | World Bank GDP indicators (current, constant 2015, PPP, per capita) for all countries, 1960 onwards |
+| [nomis_census_travel_method](gov-etl/nomis_census_travel_method.md) | Census 2021 method of travel to work (TS061) by output area, LSOA, MSOA, local authority and ward |
+| [nomis_census_travel_distance](gov-etl/nomis_census_travel_distance.md) | Census 2021 distance travelled to work (TS058) by output area, LSOA, MSOA, local authority and ward |
+| [nomis_census_car_availability](gov-etl/nomis_census_car_availability.md) | Census 2021 cars or vans per household (TS045) by output area, LSOA, MSOA, local authority and ward |
+| [nomis_census_commute_flows](gov-etl/nomis_census_commute_flows.md) | Census 2021 home-to-workplace flows (ODWP01EW) between MSOAs and between local authorities |
+| [stats19](gov-etl/stats19.md) | DfT road safety data: every reported injury road collision in GB since 1979, with vehicles and casualties |
+| [traffic_census_raw_counts](gov-etl/traffic_census_raw_counts.md) | DfT hourly manual traffic counts by vehicle type on count days, all GB count points, 2000 to present |
+| [naptan_stops](gov-etl/naptan_stops.md) | NaPTAN: every bus stop, station and other public transport stop in GB, with location |
+| [dft_journey_times_lsoa](gov-etl/dft_journey_times_lsoa.md) | DfT journey time statistics: travel times from each LSOA in England to jobs, schools, GPs, hospitals, shops and town centres (2019 edition) |
+| [dft_bus_statistics_la](gov-etl/dft_bus_statistics_la.md) | DfT local bus statistics by local authority: passenger journeys, vehicle miles and punctuality, annual |
+| [webtris](gov-etl/webtris.md) | National Highways WebTRIS 15-minute traffic counts and speeds on the M4 (J12–J14) and A34 near Newbury |
+| [street_manager_permit_events](gov-etl/street_manager_permit_events.md) | DfT Street Manager roadworks permits and works events in West Berkshire, 2020 onwards |
