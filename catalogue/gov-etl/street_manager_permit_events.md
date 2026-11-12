@@ -1,8 +1,8 @@
-# Street Manager Roadworks Permits, West Berkshire
+# Street Manager Roadworks Permits, England
 
 ## Description
 
-Every roadworks permit event in West Berkshire from the DfT's Street Manager (the "manage roadworks" service): permits submitted, granted, refused, altered, cancelled and revoked, and works starting and stopping. One row per event, by utilities (water, gas, electricity, telecoms, EV chargers) and by West Berkshire Council itself, with the street, location (as an OSGB line or point), dates, traffic management (e.g. road closure, lights) and status. July 2020 onwards. For explaining disruption to buses and traffic.
+Every roadworks permit event in England from the DfT's Street Manager (the "manage roadworks" service): permits submitted, granted, refused, altered, cancelled and revoked, and works starting and stopping. One row per event, by utilities (water, gas, electricity, telecoms, EV chargers) and by highway authorities (councils), with the street, location (as an OSGB line or point), dates, traffic management (e.g. road closure, lights) and status. Every highway authority in England (about 160) that uses Street Manager, July 2020 onwards; about a million events a month. For explaining disruption to buses and traffic. Filter on `highway_authority_swa_code = '340'` for West Berkshire.
 
 ## Classification
 
@@ -41,7 +41,7 @@ All the permit fields are strings, as Street Manager sends them; `object_data_js
 | work_reference_number | string | Yes | Key | The works; one works can have several permits |
 | permit_reference_number | string | Yes | | E.g. `5A002-CKBER-P-014275-01` |
 | promoter_swa_code, promoter_organisation | string | Yes | | Who is doing the work, e.g. `Thames Water`, `Connected Kerb`, `WEST BERKSHIRE COUNCIL` |
-| highway_authority, highway_authority_swa_code | string | Yes | | Always `WEST BERKSHIRE COUNCIL`, `340` |
+| highway_authority, highway_authority_swa_code | string | Yes | | Highway authority and its street works code, e.g. `WEST BERKSHIRE COUNCIL`, `340`; `READING BOROUGH COUNCIL`, `345`. Names are written inconsistently (`ESSEX COUNTY COUNCIL`, `West Northamptonshire Council`), so filter on the code |
 | works_location_coordinates | string | Yes | | WKT geometry in OSGB36 (EPSG:27700), e.g. `LINESTRING(467850.4 171503.6, …)` or `POINT(…)` |
 | street_name, area_name, town | string | Yes | | Where |
 | usrn | string | Yes | | Unique Street Reference Number |
@@ -69,7 +69,7 @@ Road closures and temporary signals on the A4 (or any street) by month:
 ```sql
 select event_month, street_name, traffic_management_type, count(distinct work_reference_number) as works
 from incoming.street_manager_permit_events
-where event_type = 'WORK_START'
+where highway_authority_swa_code = '340' and event_type = 'WORK_START'
   and traffic_management_type in ('Road closure', 'Multi-way signals', 'Two-way signals')
   and (street_name like '%BATH ROAD%' or street_name like 'A4%')
 group by 1, 2, 3 order by 1, 4 desc
@@ -80,24 +80,25 @@ Works that started on a given day in Thatcham, to explain a bad day for the buse
 ```sql
 select street_name, promoter_organisation, traffic_management_type, actual_start_date_time, proposed_end_date
 from incoming.street_manager_permit_events
-where event_month = '2026-09' and event_type = 'WORK_START' and town = 'THATCHAM'
+where event_month = '2026-09' and highway_authority_swa_code = '340' and event_type = 'WORK_START' and town = 'THATCHAM'
   and actual_start_date_time like '2026-09-15%'
 ```
 
 ## Source ETL / code
 
-`github.com/dantelore/gov-etl`, `street_manager/street_manager_load.py`. Downloads each month's archive, keeps events for highway authority 340, and writes one parquet file a month. Many archives from 2020 to 2025 are streamed zips with no central directory (they won't open in `unzip`), so the loader reads them entry by entry from the local headers.
+`github.com/dantelore/gov-etl`, `street_manager/street_manager_load.py`. Downloads each month's archive and writes every event to one parquet file a month (zstd, written in chunks of 100,000 events to keep memory down to about 2 GB). Many archives from 2020 to 2025 are streamed zips with no central directory (they won't open in `unzip`), so the loader reads them entry by entry from the local headers.
 
 ```bash
 python street_manager/street_manager_load.py                  # every month not yet loaded
 python street_manager/street_manager_load.py --month 2026-11  # (re)load one month
+python street_manager/street_manager_load.py --reload-all     # reload every month
 ```
 
 ## Freshness & update cadence
 
 Manual. A month's archive is complete after the month ends. Rerun the loader monthly (it loads any month not yet in S3).
 
-**History from:** July 2020 (Street Manager started that month, so it is part-month) to October 2026: 220,985 events for 42,516 works, loaded 2026-11-12.
+**History from:** July 2020 (Street Manager started that month, so it is part-month) to October 2026. The West Berkshire-only load of 2026-11-12 had 220,985 events for 42,516 works; nationally a month has about a million events.
 
 ## Running costs (estimated)
 
@@ -105,14 +106,17 @@ From the S3 size on 2026-11-12. Method: [gov-etl README](README.md#running-costs
 
 | Item | Basis | Est. $/month |
 |---|---|---|
-| S3 storage | 0.053 GB, 76 objects (221,000 events) | $0.001 |
-| **Total** | | **$0.001** |
+| S3 storage | Estimated 7–8 GB for 76 months (about 100 MB a month, zstd), growing about 1.2 GB a year | About $0.17, rising about $0.03 a year |
+| **Total** | | **About $0.17** |
+
+The national reload started on 2026-11-12 and these are estimates from its first months; until it finishes, months it hasn't reached yet still hold West Berkshire only.
 
 ## Known issues & caveats
 
 - **Events, not works.** A works shows up as several events (submitted, granted, started, stopped, and any alterations). Count distinct `work_reference_number`s, and take the latest event per permit for its final state.
 - Field names and values changed over time; early events (2020) lack some fields. The whole record is in `object_data_json`.
-- Only West Berkshire Council's roads. Works on the M4 and A34 (National Highways) aren't in Street Manager.
+- Local authority roads only. Works on motorways and trunk roads (National Highways, e.g. the M4 and A34) aren't in Street Manager, and some authorities joined after July 2020.
+- A full scan reads several GB; select only the columns you need (`object_data_json` is most of the size).
 - Dates are ISO strings in UTC; `proposed_*` dates for whole-day works are stored as 23:00 the evening before in summer.
 - Street names are uppercase as entered (`BATH ROAD`, sometimes `A4 BATH ROAD`); match loosely.
 - Events whose archive entry was cut off at the end of a damaged archive are lost (the loader stops at a truncated final entry).

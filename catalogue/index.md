@@ -117,11 +117,11 @@ One line per dataset. For full details, follow the link.
 | [nomis_census_travel_method](gov-etl/nomis_census_travel_method.md) | Census 2021 method of travel to work (TS061) by output area, LSOA, MSOA, local authority and ward |
 | [nomis_census_travel_distance](gov-etl/nomis_census_travel_distance.md) | Census 2021 distance travelled to work (TS058) by output area, LSOA, MSOA, local authority and ward |
 | [nomis_census_car_availability](gov-etl/nomis_census_car_availability.md) | Census 2021 cars or vans per household (TS045) by output area, LSOA, MSOA, local authority and ward |
-| [nomis_census_commute_flows](gov-etl/nomis_census_commute_flows.md) | Census 2021 home-to-workplace flows (ODWP01EW) between MSOAs and between local authorities |
+| [nomis_census_commute_flows](gov-etl/nomis_census_commute_flows.md) | Census 2021 home-to-workplace flows (ODWP01EW) between output areas, MSOAs and local authorities |
 | [stats19](gov-etl/stats19.md) | DfT road safety data: every reported injury road collision in GB since 1979, with vehicles and casualties |
 | [traffic_census_raw_counts](gov-etl/traffic_census_raw_counts.md) | DfT hourly manual traffic counts by vehicle type on count days, all GB count points, 2000 to present |
 | [naptan_stops](gov-etl/naptan_stops.md) | NaPTAN: every bus stop, station and other public transport stop in GB, with location |
 | [dft_journey_times_lsoa](gov-etl/dft_journey_times_lsoa.md) | DfT journey time statistics: travel times from each LSOA in England to jobs, schools, GPs, hospitals, shops and town centres (2019 edition) |
 | [dft_bus_statistics_la](gov-etl/dft_bus_statistics_la.md) | DfT local bus statistics by local authority: passenger journeys, vehicle miles and punctuality, annual |
-| [webtris](gov-etl/webtris.md) | National Highways WebTRIS 15-minute traffic counts and speeds on the M4 (J12–J14) and A34 near Newbury |
-| [street_manager_permit_events](gov-etl/street_manager_permit_events.md) | DfT Street Manager roadworks permits and works events in West Berkshire, 2020 onwards |
+| [webtris](gov-etl/webtris.md) | National Highways WebTRIS: daily flows and hourly profiles at every site in England, 15-minute counts on the M4 (J12–J14) and A34 near Newbury |
+| [street_manager_permit_events](gov-etl/street_manager_permit_events.md) | DfT Street Manager roadworks permits and works events for every highway authority in England, 2020 onwards |

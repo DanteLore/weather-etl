@@ -4,10 +4,14 @@
 
 Traffic counts and speeds from National Highways' WebTRIS (Traffic Information System) for the strategic roads around Newbury and Thatcham: the M4 from junction 12 (Theale) to junction 14 (Hungerford), and the A34 from Chieveley (M4 J13) south to the A343. Every 15 minutes, each loop detector site gives the number of vehicles by length band (cars, vans, lorries), by speed band where measured, the average speed and the total volume. 58 of the 62 active sites have data, as far back as the API holds (2017 for most): 13.5 million rows from 2017-01-01 to 2026-06-30 on 2026-11-12. Also known as MIDAS (motorway loop detectors), TAME and TMU sites. A second table lists every WebTRIS site in England.
 
-| Table | One row per |
-|---|---|
-| `incoming.webtris_counts` | site per 15 minutes |
-| `incoming.webtris_sites` | WebTRIS site (20,076, all England) |
+| Table | One row per | Coverage |
+|---|---|---|
+| `incoming.webtris_counts` | site per 15 minutes | The M4/A34 sites near Newbury |
+| `incoming.webtris_daily_flows` | site per day | Every WebTRIS site in England, active or not |
+| `incoming.webtris_hourly_profiles` | site, month, weekday and hour | Every WebTRIS site in England |
+| `incoming.webtris_sites` | WebTRIS site | All 20,076 |
+
+The national tables come from WebTRIS's Monthly report: the daily flow and share of large vehicles, and the average flow in each hour for each weekday of each month. The 15-minute data is local only, because loading it for every site would mean about 1.5 TB of API downloads.
 
 ## Classification
 
@@ -50,6 +54,31 @@ Open Government Licence v3.0. Attribute National Highways.
 | total_volume | int | Yes | | All vehicles in the 15 minutes; null when the detector reported nothing |
 | year | string | No | Partition key | Year |
 
+### webtris_daily_flows
+
+| Field name | Type | Nullable | Key role | Description |
+|---|---|---|---|---|
+| site_id | string | No | Key | WebTRIS site ID |
+| report_date | date | No | Key | Day |
+| day_name | string | No | | `Mon`, `Tue`, … (WebTRIS writes Thursday as `Thur`) |
+| flow | int | Yes | | Vehicles that day (24 hours); null if the detector didn't report |
+| large_vehicle_pct | double | Yes | | Share of vehicles over 6.6 m long |
+| year | string | No | Partition key | Year |
+
+### webtris_hourly_profiles
+
+| Field name | Type | Nullable | Key role | Description |
+|---|---|---|---|---|
+| site_id | string | No | Key | WebTRIS site ID |
+| month_start | date | No | Key | First day of the month |
+| day_name | string | No | Key | Weekday averaged |
+| hour_start | int | No | Key | Hour, `0` (00:00–01:00) to `23` |
+| average_vehicles | int | Yes | | Average vehicles in that hour on that weekday that month |
+| days_averaged | double | Yes | | How many days went into the average |
+| average_flow_24h | int | Yes | | Average daily flow on that weekday that month |
+| large_vehicle_pct_24h | double | Yes | | Share of large vehicles on that weekday that month |
+| year | string | No | Partition key | Year |
+
 ### webtris_sites
 
 | Field name | Type | Nullable | Key role | Description |
@@ -84,6 +113,17 @@ where s.site_name like '5614/%' or s.site_name like '5615/%'
 group by 1, 2 order by 2, 1
 ```
 
+Busiest morning peak hour on weekdays at every site in a region, nationally (join `webtris_sites` for location):
+
+```sql
+select h.site_id, s.site_name, max(h.average_vehicles) as peak_hour_vehicles
+from incoming.webtris_hourly_profiles h
+join incoming.webtris_sites s on s.site_id = h.site_id
+where h.year = '2025' and h.day_name not in ('Sat', 'Sun') and h.hour_start between 7 and 9
+  and s.latitude between 51.3 and 51.6 and s.longitude between -1.5 and -0.9
+group by 1, 2 order by 3 desc limit 20
+```
+
 ## Source ETL / code
 
 `github.com/dantelore/gov-etl`, `webtris/webtris_load.py`. Reloads the site list, then fetches a year at a time for each active site in the area (latitude 51.36–51.50, longitude −1.40 to −1.05), half a second apart. A site-year with no data is skipped.
@@ -91,7 +131,10 @@ group by 1, 2 order by 2, 1
 ```bash
 python webtris/webtris_load.py                   # everything since 2010 (data starts in 2017)
 python webtris/webtris_load.py --from-year 2026  # refresh the current year
+python webtris/webtris_load.py --national        # daily flows and hourly profiles for every site (about 800 requests a year)
 ```
+
+The national load asks for 25 sites per request, half a second apart, and writes one file per year per table.
 
 ## Freshness & update cadence
 
@@ -103,8 +146,11 @@ From the S3 size on 2026-11-12. Method: [gov-etl README](README.md#running-costs
 
 | Item | Basis | Est. $/month |
 |---|---|---|
-| S3 storage | 0.072 GB, 412 objects (13.5 million rows) | $0.002 |
-| **Total** | | **$0.002** |
+| S3 storage, 15-minute counts | 0.072 GB, 412 objects (13.5 million rows) | $0.002 |
+| S3 storage, national daily flows and hourly profiles | Estimated 1–1.5 GB for 2017–2026 (about 30 million hourly-profile rows a year) | About $0.03 |
+| **Total** | | **About $0.03** |
+
+The national load started on 2026-11-12 and takes several hours; the national figures are estimates until it finishes.
 
 Querying it: a year of all sites is about 1 MB per column read.
 
