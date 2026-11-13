@@ -14,7 +14,7 @@ Dan (data platform).
 
 ## Source & references
 
-Network Rail Open Data, SCHEDULE feed: the daily full extract per operator, `CIF_EF_TOC_FULL_DAILY` (GWR) and `CIF_EX_TOC_FULL_DAILY` (Elizabeth line), from `https://publicdatafeeds.networkrail.co.uk/ntrod/CifFileAuthenticate`. Gzipped JSON lines, about 9 MB and 5 MB. The login is a Network Rail open data account, stored in Parameter Store as `networkrailusername` and `networkrailpassword` (us-west-2) and bundled in the git-ignored `api_keys.py`. Format: [Open Rail Data wiki: SCHEDULE](https://wiki.openraildata.com/index.php?title=SCHEDULE).
+Network Rail Open Data, SCHEDULE feed: the daily full extract per operator, `CIF_EF_TOC_FULL_DAILY` (GWR) and `CIF_EX_TOC_FULL_DAILY` (Elizabeth line), from `https://publicdatafeeds.networkrail.co.uk/ntrod/CifFileAuthenticate`. Gzipped JSON lines, about 9 MB and 5 MB. The login is a Network Rail open data account, stored in Parameter Store as `networkrailusername` and `networkrailpassword` (eu-west-1) and bundled in the git-ignored `api_keys.py`. Format: [Open Rail Data wiki: SCHEDULE](https://wiki.openraildata.com/index.php?title=SCHEDULE).
 
 ## License & usage restrictions
 
