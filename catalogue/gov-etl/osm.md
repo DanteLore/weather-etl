@@ -119,11 +119,11 @@ python osm/osm_load.py
 python osm/osm_load.py --pbf /path/to/england-latest.osm.pbf   # reuse a downloaded extract
 ```
 
-Derived tables: [osm_path_gradients](osm_path_gradients.md) (gradients from the lidar) and [osm_cycle_routes](osm_cycle_routes.md) (Thatcham route tests).
+Derived table: [osm_path_gradients](osm_path_gradients.md) (gradients from the lidar).
 
 ## Freshness & update cadence
 
-Manual. Geofabrik updates the extract daily; rerun to refresh (each load replaces both tables, deleting the previous files first). Then rerun the two derived tables.
+Manual. Geofabrik updates the extract daily; rerun to refresh (each load replaces both tables, deleting the previous files first). Then rerun [osm_path_gradients](osm_path_gradients.md).
 
 ## Running costs (estimated)
 
@@ -149,7 +149,7 @@ Querying it: the Thatcham square's paths file is about 110 MB; select only the c
 
 | Consumer | Contact | Notes |
 |---|---|---|
-| Thatcham analysis (thatchamplan.co.uk) | Dan | Cycle network gaps and route tests |
+| Thatcham analysis (thatchamplan.co.uk) | Dan | Cycle network: paths, crossings, gaps |
 
 ## Status
 

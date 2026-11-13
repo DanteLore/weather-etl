@@ -69,7 +69,7 @@ where grid_e = 4 and grid_n = 1 and name in ('Harts Hill Road', 'Floral Way', 'B
 group by 1
 ```
 
-A route's climb: add `climb_m` for ways ridden in their drawn direction and `descent_m` for ways ridden backwards. [osm_cycle_routes](osm_cycle_routes.md) does this for the Thatcham routes.
+A route's climb: add `climb_m` for ways ridden in their drawn direction and `descent_m` for ways ridden backwards.
 
 ## Source ETL / code
 

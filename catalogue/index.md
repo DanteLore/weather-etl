@@ -132,4 +132,3 @@ One line per dataset. For full details, follow the link.
 | [pct](gov-etl/pct.md) | Propensity to Cycle Tool: cycling to work and school now and under scenarios, by area, home-work pair, school and route segment |
 | [osm](gov-etl/osm.md) | OpenStreetMap roads, paths, crossings, barriers and cycle parking for England, with cycling tags and a routable node list |
 | [osm_path_gradients](gov-etl/osm_path_gradients.md) | Gradients of OpenStreetMap roads and paths from the EA 1m lidar (West Berkshire and one London tile) |
-| [osm_cycle_routes](gov-etl/osm_cycle_routes.md) | Cycle route tests from the North East Thatcham site, and where Thatcham's cycle paths stop |

@@ -61,7 +61,6 @@ Coordinate columns are `x_coordinate` (easting) and `y_coordinate` (northing) in
 | [pct](pct.md) | `incoming.pct_commute_zones`, `_commute_od`, `_school_zones`, `_schools`, `_route_network` | Propensity to Cycle Tool: cycling now (2011) and under scenarios, by area, home-work pair, school and road segment |
 | [osm](osm.md) | `incoming.osm_paths`, `incoming.osm_points` | OpenStreetMap roads and paths (6.6M ways) with cycling tags and node IDs, plus crossings, barriers and cycle parking, England |
 | [osm_path_gradients](osm_path_gradients.md) | `incoming.osm_path_gradients` | Climb and steepest 50 m of every road and path where the 1m lidar is loaded |
-| [osm_cycle_routes](osm_cycle_routes.md) | `incoming.osm_cycle_routes`, `_route_segments`, `_network_ends` | Cycle route tests from the NE Thatcham site to the station, Kennet School and town centre; where Thatcham's cycle paths stop |
 
 ## Running costs
 
@@ -114,7 +113,6 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | [pct](pct.md) | incoming | $0.006 |
 | [osm](osm.md) | incoming | $0.029 |
 | [osm_path_gradients](osm_path_gradients.md) | incoming | <$0.001 |
-| [osm_cycle_routes](osm_cycle_routes.md) | incoming | <$0.001 |
 | **Total** | | **$0.43** |
 
 The datasets added on 2026-11-12 and 2026-11-13 (from `stats19` down) were measured on those days.
