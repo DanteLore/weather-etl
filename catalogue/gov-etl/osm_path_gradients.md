@@ -41,6 +41,7 @@ Contains OpenStreetMap data (© OpenStreetMap contributors, ODbL 1.0; the table 
 | max_downhill_pct | double | No | | Steepest downhill in the drawn direction: the steepest uphill going the other way |
 | mean_gradient_pct | double | No | | (end height − start height) ÷ length |
 | is_interpolated | boolean | No | | True for ways tagged `bridge` or `tunnel`: heights are a straight line between the ends (6,857 ways) |
+| gradient_check | string | Yes | | Why the figures may be wrong, if they might be: `below sea level`, `road steeper than 20%`, `steeper than 40%`, `jump of over 5 m in 10 m` (on roads), comma-separated. Null for most ways. On 2026-11-13: 58 ways flagged in West Berkshire, 812 in the London tile |
 | elevation_profile_m | array<double> | No | | Heights every 10 m from the first node, then at the last node |
 | grid_e, grid_n | int | No | Partition keys | As `osm_paths` |
 
@@ -54,7 +55,7 @@ select g.name, g.highway, round(g.length_m) as metres, g.climb_m, g.descent_m,
        g.elevation_min_m, g.elevation_max_m
 from incoming.osm_path_gradients g
 join incoming.osm_paths p on p.osm_id = g.osm_id and p.grid_e = 4 and p.grid_n = 1
-where g.grid_e = 4 and g.grid_n = 1 and g.length_m >= 100
+where g.grid_e = 4 and g.grid_n = 1 and g.length_m >= 100 and g.gradient_check is null
   and p.min_lon > -1.30 and p.max_lon < -1.20 and p.min_lat > 51.39 and p.max_lat < 51.42
 order by steepest_pct desc limit 20
 ```
@@ -75,8 +76,10 @@ A route's climb: add `climb_m` for ways ridden in their drawn direction and `des
 `github.com/dantelore/gov-etl`, `osm_gradients/osm_gradients_load.py`. For each grid square that has lidar, it reads each 10 km lidar tile into a 1 m height grid (about 400 MB each), and for each way that touches one it:
 
 1. samples a height every 10 m (the median of the 3 × 3 m around the point);
-2. smooths the profile with a running median of three samples, to remove kerbs, banks and the few metres OSM lines can be off;
-3. interpolates between the ends for bridges and tunnels.
+2. smooths the profile with a 90 m running median. This leaves any steady slope exactly as it is but removes dips and spikes up to about 40 m wide: unmapped bridges and culverts, kerbs and banks, and the few metres OSM lines can be off;
+3. checks the last few samples at each end for an abrupt step that breaks from the trend (typically a way ending at a bridge abutment, where the lidar drops to the road below) and continues the trend instead;
+4. interpolates between the ends for bridges and tunnels;
+5. flags anything still implausible in `gradient_check`.
 
 Ways with more than 20% of samples outside the lidar are skipped. Takes about 3 minutes.
 
@@ -86,7 +89,7 @@ python osm_gradients/osm_gradients_load.py
 
 ## Freshness & update cadence
 
-Manual. Rerun after reloading `osm_paths` or loading more lidar (each square's file is replaced). Built 2026-11-13 from OSM data of 2026-11-11.
+Manual. Rerun after reloading `osm_paths` or loading more lidar (each square's file is replaced). Built 2026-11-13 from OSM data of 2026-11-11 (rebuilt the same day with the wider smoothing, end check and `gradient_check`).
 
 ## Running costs (estimated)
 
@@ -100,7 +103,13 @@ From the S3 size on 2026-11-13. Method: [gov-etl README](README.md#running-costs
 ## Known issues & caveats
 
 - **Only where the lidar is loaded**: ten 10 km tiles in West Berkshire and one in London (see [ea_lidar_1m](ea_lidar_1m.md)). The West Berkshire tiles cover Newbury, Thatcham and the land south to Crookham Common, but not Theale or the area east of Newbury north of about 175000 N. Use [os_terrain_50](os_terrain_50.md) for rough figures elsewhere.
-- **The lidar is bare earth.** Bridges are removed, so ways on bridges would dip to what's below; ways tagged `bridge` are interpolated instead. An untagged bridge, or a way drawn a few metres off onto an embankment or cutting slope, still gives spurious steep bits. The 99th percentile of `max_uphill_pct` on ways of 50 m or more is 12.8%, but the maximum is 52%. Check any very steep value against the profile.
+- **The lidar is bare earth.** Bridges are removed, so ways on bridges would dip to what's below. Ways tagged `bridge` are interpolated, and short unmapped bridges are smoothed out. Longer unmapped structures, ways drawn on a cutting or embankment slope, and ground dug out or built up since the survey can't be fixed from the lidar, and show up in `gradient_check` instead. Filter `gradient_check is null` for figures you'd quote.
+- **Very steep isn't always wrong.** Ways of 50 m or more, steepest 50 m either way:
+
+  | Area | 99th percentile | Steepest unflagged | Steepest overall |
+  |---|---|---|---|
+  | West Berkshire | 17% | 39%: paths on the North Wessex Downs escarpment around Inkpen and Walbury Hill, which really are that steep | 53%: a footway drawn straight down that scarp, flagged |
+  | London tile | 8% | | 24% |
 - Short ways (under about 50 m) give noisy maxima, because a single 10 m step decides them.
 - Heights are of the ground at the way's line, not the road surface; steps and ramps are as steep as the ground they're drawn on.
 
