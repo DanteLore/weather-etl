@@ -125,3 +125,11 @@ One line per dataset. For full details, follow the link.
 | [dft_bus_statistics_la](gov-etl/dft_bus_statistics_la.md) | DfT local bus statistics by local authority: passenger journeys, vehicle miles and punctuality, annual |
 | [webtris](gov-etl/webtris.md) | National Highways WebTRIS: daily flows and hourly profiles at every site in England, 15-minute counts on the M4 (J12–J14) and A34 near Newbury |
 | [street_manager_permit_events](gov-etl/street_manager_permit_events.md) | DfT Street Manager roadworks permits and works events for every highway authority in England, 2020 onwards |
+| [dft_walking_cycling_la](gov-etl/dft_walking_cycling_la.md) | DfT walking and cycling statistics (CW0301–CW0303): share of adults walking and cycling by local authority, yearly from 2016 |
+| [nomis_census_2011_travel](gov-etl/nomis_census_2011_travel.md) | Census 2011 method of travel to work (QS701EW) and home-to-workplace flows by method (WU03EW) |
+| [ons_census_area_lookup_2011_2021](gov-etl/ons_census_area_lookup_2011_2021.md) | ONS lookups from 2011 to 2021 Census output areas, LSOAs and MSOAs |
+| [dft_national_travel_survey](gov-etl/dft_national_travel_survey.md) | DfT National Travel Survey tables and National Travel Attitudes Study responses (waves 7–10) |
+| [pct](gov-etl/pct.md) | Propensity to Cycle Tool: cycling to work and school now and under scenarios, by area, home-work pair, school and route segment |
+| [osm](gov-etl/osm.md) | OpenStreetMap roads, paths, crossings, barriers and cycle parking for England, with cycling tags and a routable node list |
+| [osm_path_gradients](gov-etl/osm_path_gradients.md) | Gradients of OpenStreetMap roads and paths from the EA 1m lidar (West Berkshire and one London tile) |
+| [osm_cycle_routes](gov-etl/osm_cycle_routes.md) | Cycle route tests from the North East Thatcham site, and where Thatcham's cycle paths stop |

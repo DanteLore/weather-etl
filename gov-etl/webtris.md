@@ -11,7 +11,7 @@ Traffic counts and speeds from National Highways' WebTRIS (Traffic Information S
 | `incoming.webtris_hourly_profiles` | site, month, weekday and hour | Every WebTRIS site in England |
 | `incoming.webtris_sites` | WebTRIS site | All 20,076 |
 
-The national tables come from WebTRIS's Monthly report: the daily flow and share of large vehicles, and the average flow in each hour for each weekday of each month. The 15-minute data is local only, because loading it for every site would mean about 1.5 TB of API downloads.
+The national tables come from WebTRIS's Monthly report: the daily flow and share of large vehicles, and the average flow in each hour for each weekday of each month. They hold 26.4 million daily rows and 147 million hourly-profile rows for 12,866 sites with data, 2017-01-01 to 2026-06-30, on 2026-11-13. The 15-minute data is local only, because loading it for every site would mean about 1.5 TB of API downloads.
 
 ## Classification
 
@@ -23,7 +23,7 @@ Dan. See the gov-etl repo for the code.
 
 ## Source & references
 
-National Highways WebTRIS API v1.0: https://webtris.nationalhighways.co.uk/api/swagger/ui/index. `/sites` for the site list, `/reports/Daily` for 15-minute rows.
+National Highways WebTRIS API v1.0: https://webtris.nationalhighways.co.uk/api/swagger/ui/index. `/sites` for the site list, `/reports/Daily` for 15-minute rows, `/reports/Monthly` for the national daily flows and hourly profiles.
 
 ## License & usage restrictions
 
@@ -31,8 +31,8 @@ Open Government Licence v3.0. Attribute National Highways.
 
 ## Location
 
-- S3: `s3://dantelore.data.incoming/webtris/counts/year=<yyyy>/webtris_counts_<yyyy>_site_<site_id>.parquet` and `s3://dantelore.data.incoming/webtris/sites/webtris_sites.parquet`
-- Glue: `incoming.webtris_counts` (partitioned by `year`), `incoming.webtris_sites` (not partitioned)
+- S3: `s3://dantelore.data.incoming/webtris/counts/year=<yyyy>/webtris_counts_<yyyy>_site_<site_id>.parquet`, `webtris/daily_flows/year=<yyyy>/webtris_daily_flows_<yyyy>.parquet`, `webtris/hourly_profiles/year=<yyyy>/webtris_hourly_profiles_<yyyy>.parquet` and `webtris/sites/webtris_sites.parquet`
+- Glue: `incoming.webtris_counts`, `incoming.webtris_daily_flows`, `incoming.webtris_hourly_profiles` (partitioned by `year`), `incoming.webtris_sites` (not partitioned)
 
 ## Field spec
 
@@ -134,7 +134,7 @@ python webtris/webtris_load.py --from-year 2026  # refresh the current year
 python webtris/webtris_load.py --national        # daily flows and hourly profiles for every site (about 800 requests a year)
 ```
 
-The national load asks for 25 sites per request, half a second apart, and writes one file per year per table.
+The national load asks for 25 sites per request, half a second apart, and writes one file per year per table. WebTRIS's errors (500s) are retried with growing pauses; if a batch keeps failing, its sites are fetched one at a time and any site that still fails is skipped and logged. In the 2026-11-12 load that skipped one site, 6506, for 2018 only.
 
 ## Freshness & update cadence
 
@@ -146,17 +146,15 @@ From the S3 size on 2026-11-12. Method: [gov-etl README](README.md#running-costs
 
 | Item | Basis | Est. $/month |
 |---|---|---|
-| S3 storage, 15-minute counts | 0.072 GB, 412 objects (13.5 million rows) | $0.002 |
-| S3 storage, national daily flows and hourly profiles | Estimated 1–1.5 GB for 2017–2026 (about 30 million hourly-profile rows a year) | About $0.03 |
-| **Total** | | **About $0.03** |
-
-The national load started on 2026-11-12 and takes several hours; the national figures are estimates until it finishes.
+| S3 storage, 15-minute counts and sites | 0.072 GB, 412 objects (13.5 million rows) | $0.002 |
+| S3 storage, national daily flows and hourly profiles | 0.373 GB, 20 objects | $0.009 |
+| **Total** | | **$0.010** |
 
 Querying it: a year of all sites is about 1 MB per column read.
 
 ## Known issues & caveats
 
-- **Inactive sites aren't loaded.** Only the 62 sites active in November 2026; sites retired earlier (including many older M4 MIDAS loops) have history that isn't here.
+- **The 15-minute counts cover active sites only**: the 62 near Newbury active in November 2026, so sites retired earlier (including many older M4 MIDAS loops) have no 15-minute history here. The national daily and hourly tables include inactive sites.
 - **Gaps.** Detectors fail; a null `total_volume` means no report for that period, and some site-years have months missing. Check coverage before comparing totals.
 - Speed bands are blank at most sites; `avg_mph` is more widely filled.
 - MIDAS sites on the motorway main carriageway count one direction each (`A`/`B` in the name). Slip-road (`J`/`K`/`L`/`M`) and TMU/TAME sites count individual links, so don't add sites together without checking which links they cover.
