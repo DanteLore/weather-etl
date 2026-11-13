@@ -92,13 +92,16 @@ where event_month = '2026-09' and highway_authority_swa_code = '340' and event_t
 python street_manager/street_manager_load.py                  # every month not yet loaded
 python street_manager/street_manager_load.py --month 2026-11  # (re)load one month
 python street_manager/street_manager_load.py --reload-all     # reload every month
+python street_manager/street_manager_load.py --reload-all --from-month 2023-10   # resume a reload
 ```
+
+A dropped download is retried three times, 30, 60 and 90 seconds apart.
 
 ## Freshness & update cadence
 
 Manual. A month's archive is complete after the month ends. Rerun the loader monthly (it loads any month not yet in S3).
 
-**History from:** July 2020 (Street Manager started that month, so it is part-month) to October 2026. The West Berkshire-only load of 2026-11-12 had 220,985 events for 42,516 works; nationally a month has about a million events.
+**History from:** July 2020 (Street Manager started that month, so it is part-month) to October 2026: 76.9 million events for 15.8 million works, from 163 highway authorities, on 2026-11-12. A month now has about a million events.
 
 ## Running costs (estimated)
 
@@ -106,10 +109,8 @@ From the S3 size on 2026-11-12. Method: [gov-etl README](README.md#running-costs
 
 | Item | Basis | Est. $/month |
 |---|---|---|
-| S3 storage | Estimated 7–8 GB for 76 months (about 100 MB a month, zstd), growing about 1.2 GB a year | About $0.17, rising about $0.03 a year |
-| **Total** | | **About $0.17** |
-
-The national reload started on 2026-11-12 and these are estimates from its first months; until it finishes, months it hasn't reached yet still hold West Berkshire only.
+| S3 storage | 7.68 GB, 76 objects (about 100 MB a month, zstd), growing about 1.2 GB a year | $0.177, rising about $0.03 a year |
+| **Total** | | **$0.177** |
 
 ## Known issues & caveats
 

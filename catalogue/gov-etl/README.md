@@ -54,6 +54,14 @@ Coordinate columns are `x_coordinate` (easting) and `y_coordinate` (northing) in
 | [dft_bus_statistics_la](dft_bus_statistics_la.md) | `incoming.dft_bus_statistics_la` | Local bus journeys, vehicle miles and punctuality by local authority, annual |
 | [webtris](webtris.md) | `incoming.webtris_counts`, `_daily_flows`, `_hourly_profiles`, `_sites` | Daily flows and hourly profiles at every WebTRIS site in England, plus 15-minute counts and speeds on the M4 (J12–J14) and A34 near Newbury, 2017 onwards |
 | [street_manager_permit_events](street_manager_permit_events.md) | `incoming.street_manager_permit_events` | Roadworks permit and works events for every highway authority in England, July 2020 onwards |
+| [dft_walking_cycling_la](dft_walking_cycling_la.md) | `incoming.dft_walking_cycling_la` | Share of adults walking and cycling by purpose and frequency, every local authority in England, 2016 onwards |
+| [nomis_census_2011_travel](nomis_census_2011_travel.md) | `incoming.nomis_census_2011_travel_method`, `_commute_flows` | Census 2011 method of travel to work (OA to local authority) and home-to-work flows by method (MSOA, local authority) |
+| [ons_census_area_lookup_2011_2021](ons_census_area_lookup_2011_2021.md) | `incoming.ons_census_area_lookup_2011_2021` | How 2011 output areas, LSOAs and MSOAs map to 2021 ones |
+| [dft_national_travel_survey](dft_national_travel_survey.md) | `incoming.dft_nts_tables`, `incoming.dft_ntas_responses` | Every National Travel Survey table, and National Travel Attitudes Study waves 7–10 |
+| [pct](pct.md) | `incoming.pct_commute_zones`, `_commute_od`, `_school_zones`, `_schools`, `_route_network` | Propensity to Cycle Tool: cycling now (2011) and under scenarios, by area, home-work pair, school and road segment |
+| [osm](osm.md) | `incoming.osm_paths`, `incoming.osm_points` | OpenStreetMap roads and paths (6.6M ways) with cycling tags and node IDs, plus crossings, barriers and cycle parking, England |
+| [osm_path_gradients](osm_path_gradients.md) | `incoming.osm_path_gradients` | Climb and steepest 50 m of every road and path where the 1m lidar is loaded |
+| [osm_cycle_routes](osm_cycle_routes.md) | `incoming.osm_cycle_routes`, `_route_segments`, `_network_ends` | Cycle route tests from the NE Thatcham site to the station, Kennet School and town centre; where Thatcham's cycle paths stop |
 
 ## Running costs
 
@@ -89,9 +97,9 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | [nomis_census_occupation](nomis_census_occupation.md) | incoming | <$0.001 |
 | [ons_inflation](ons_inflation.md) | incoming | <$0.001 |
 | [stats19](stats19.md) | incoming | $0.038 |
-| [webtris](webtris.md) | incoming | About $0.03 (estimate) |
+| [webtris](webtris.md) | incoming | $0.010 |
 | [traffic_census_raw_counts](traffic_census_raw_counts.md) | incoming | $0.002 |
-| [street_manager_permit_events](street_manager_permit_events.md) | incoming | About $0.17 (estimate) |
+| [street_manager_permit_events](street_manager_permit_events.md) | incoming | $0.177 |
 | [naptan_stops](naptan_stops.md) | incoming | $0.001 |
 | [dft_journey_times_lsoa](dft_journey_times_lsoa.md) | incoming | $0.001 |
 | [nomis_census_travel_method](nomis_census_travel_method.md) | incoming | <$0.001 |
@@ -99,6 +107,14 @@ Lambdas that load several tables are split evenly between them; a model Lambda i
 | [nomis_census_car_availability](nomis_census_car_availability.md) | incoming | <$0.001 |
 | [nomis_census_commute_flows](nomis_census_commute_flows.md) | incoming | $0.002 |
 | [dft_bus_statistics_la](dft_bus_statistics_la.md) | incoming | <$0.001 |
-| **Total** | | **About $0.42** |
+| [dft_walking_cycling_la](dft_walking_cycling_la.md) | incoming | <$0.001 |
+| [nomis_census_2011_travel](nomis_census_2011_travel.md) | incoming | <$0.001 |
+| [ons_census_area_lookup_2011_2021](ons_census_area_lookup_2011_2021.md) | incoming | <$0.001 |
+| [dft_national_travel_survey](dft_national_travel_survey.md) | incoming | <$0.001 |
+| [pct](pct.md) | incoming | $0.006 |
+| [osm](osm.md) | incoming | $0.029 |
+| [osm_path_gradients](osm_path_gradients.md) | incoming | <$0.001 |
+| [osm_cycle_routes](osm_cycle_routes.md) | incoming | <$0.001 |
+| **Total** | | **$0.43** |
 
-The datasets added on 2026-11-12 (from `stats19` down) were measured that day.
+The datasets added on 2026-11-12 and 2026-11-13 (from `stats19` down) were measured on those days.
