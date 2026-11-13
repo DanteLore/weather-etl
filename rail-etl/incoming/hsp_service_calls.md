@@ -16,7 +16,7 @@ Dan (data platform).
 
 ## Source & references
 
-[Rail Data Marketplace](https://raildata.org.uk), product *Historical Service Performance (HSP)*. `POST https://api1.raildata.org.uk/1010-historical-service-performance-_hsp_v1/api/v1/serviceMetrics` lists the RIDs (train IDs) for a pair of stations and a date, and `.../serviceDetails` gives one train's stops. Auth is an `x-apikey` header, stored in Parameter Store as `nationalrailHSPkey` (us-west-2) and bundled in the git-ignored `api_keys.py`. Free: National Rail's [usage charges](https://www.nationalrail.co.uk/developers/darwin-data-feeds/) apply only to the Darwin Webservice feeds.
+[Rail Data Marketplace](https://raildata.org.uk), product *Historical Service Performance (HSP)*. `POST https://api1.raildata.org.uk/1010-historical-service-performance-_hsp_v1/api/v1/serviceMetrics` lists the RIDs (train IDs) for a pair of stations and a date, and `.../serviceDetails` gives one train's stops. Auth is an `x-apikey` header, stored in Parameter Store as `nationalrailHSPkey` (eu-west-1) and bundled in the git-ignored `api_keys.py`. Free: National Rail's [usage charges](https://www.nationalrail.co.uk/developers/darwin-data-feeds/) apply only to the Darwin Webservice feeds.
 
 ## License & usage restrictions
 
